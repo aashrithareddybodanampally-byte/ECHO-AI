@@ -1,5 +1,5 @@
 # ============================================================
-# ECHO-AI — Environment Validation Script (PowerShell)
+# ECHO-AI - Environment Validation Script (PowerShell)
 # ============================================================
 # Usage: .\scripts\check_environment.ps1
 # ============================================================
@@ -8,7 +8,7 @@ $ErrorActionPreference = "SilentlyContinue"
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "  ECHO-AI — Environment Validation" -ForegroundColor Cyan
+Write-Host "  ECHO-AI - Environment Validation" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
 
