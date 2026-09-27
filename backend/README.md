@@ -1,6 +1,6 @@
 # ECHO-AI Backend Foundation
 
-This is the FastAPI backend foundation for ECHO-AI (Phase 2.1) and Database Foundation (Phase 2.2).
+This is the FastAPI backend foundation for ECHO-AI (Phase 2.1), Database Foundation (Phase 2.2), and Domain Models (Phase 2.3).
 
 ## Prerequisites
 - Python >= 3.10
@@ -36,15 +36,66 @@ DATABASE_URL=postgresql+psycopg://postgres:your_password@localhost:5432/echo_ai
 
 ## Alembic Migrations
 To manage database schema changes, we use Alembic.
-After configuring `DATABASE_URL`, apply the initial migration:
+After configuring `DATABASE_URL`, apply all migrations:
 ```bash
 alembic upgrade head
 ```
+
+This creates:
+- The Alembic version tracking table (Phase 2.2 initial migration)
+- `users`, `conversations`, and `messages` tables (Phase 2.3 migration)
 
 To create a new migration after adding/changing models:
 ```bash
 alembic revision --autogenerate -m "description of changes"
 ```
+
+## Domain Models (Phase 2.3)
+
+### User
+Represents a registered ECHO-AI user. Identity anchor for all conversations.
+
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | INTEGER | PK, indexed |
+| `email` | VARCHAR(255) | NOT NULL, UNIQUE, indexed |
+| `created_at` | TIMESTAMP (UTC) | NOT NULL |
+| `updated_at` | TIMESTAMP (UTC) | NOT NULL |
+
+### Conversation
+Represents a bounded chat session owned by a User.
+
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | INTEGER | PK, indexed |
+| `user_id` | INTEGER | NOT NULL, FK → users.id (CASCADE) |
+| `title` | VARCHAR(255) | nullable |
+| `created_at` | TIMESTAMP (UTC) | NOT NULL |
+| `updated_at` | TIMESTAMP (UTC) | NOT NULL |
+
+### Message
+An individual utterance within a Conversation. Append-only.
+
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | INTEGER | PK, indexed |
+| `conversation_id` | INTEGER | NOT NULL, FK → conversations.id (CASCADE) |
+| `role` | VARCHAR(50) | NOT NULL, CHECK IN ('user','assistant','system') |
+| `content` | TEXT | NOT NULL |
+| `created_at` | TIMESTAMP (UTC) | NOT NULL, indexed |
+
+### Relationships
+
+```
+User (1) ──────────< Conversation (∞)
+                         │
+                    (1) ─┘
+                    Conversation (1) ──< Message (∞)
+```
+
+- Deleting a User cascades to their Conversations.
+- Deleting a Conversation cascades to its Messages.
+- Messages are immutable; they have no `updated_at` field.
 
 ## Environment Configuration
 Copy the example environment file to `.env`:
@@ -67,11 +118,17 @@ The API will be available at `http://127.0.0.1:8000`.
   Checks if the application can successfully connect to the PostgreSQL database.
 
 ## Running Tests
-Run the test suite from the `backend/` directory using pytest:
+Run the full test suite from the `backend/` directory:
 ```bash
 pytest
 ```
-**Note:** Tests that interact with the database (if not mocked) require a running PostgreSQL instance configured via `DATABASE_URL`. Currently, database health tests use mocked sessions, so they do not strictly require PostgreSQL to pass.
+
+Run only the domain model unit tests (no PostgreSQL required):
+```bash
+pytest tests/test_models.py -v
+```
+
+**Note:** Domain model tests (`test_models.py`) use SQLAlchemy metadata inspection only — no live database required. Database health tests (`test_db.py`) use mocked sessions. Integration tests that exercise real PostgreSQL are deferred to future phases.
 
 ## Project Structure
 - `app/main.py`: Application entry point.
@@ -80,5 +137,9 @@ pytest
 - `app/api/v1/`: API route handlers.
 - `app/schemas/`: Pydantic models for request/response validation.
 - `app/db/`: Database configuration, sessions, declarative base, and FastAPI dependencies.
+- `app/models/`: SQLAlchemy domain models (User, Conversation, Message).
 - `tests/`: Automated test suite.
 - `alembic/`: Database migration scripts.
+
+
+

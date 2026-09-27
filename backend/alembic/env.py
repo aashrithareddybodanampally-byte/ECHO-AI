@@ -25,6 +25,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from app.db.base import Base
 from app.config import settings
 
+# Import all models so that Base.metadata is populated before
+# Alembic evaluates target_metadata. Without these imports,
+# autogenerate would see an empty schema.
+import app.models  # noqa: F401 — side-effect import registers models
+
 target_metadata = Base.metadata
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
