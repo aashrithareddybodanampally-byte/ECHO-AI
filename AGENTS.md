@@ -51,12 +51,14 @@ Phase 1 establishes the engineering foundation only. No AI/ML functionality, no 
 
 ### Git Rules
 
-1. Use **feature branches** branched from `develop`.
-2. **Do not force push** to `main` or `develop`.
-3. **Do not reset** shared branches.
-4. Keep commits **focused** — one logical change per commit.
-5. **Do not commit secrets**, generated datasets, trained models, virtual environments, or `node_modules`.
-6. Write clear, conventional commit messages (e.g., `feat:`, `fix:`, `docs:`, `chore:`, `test:`).
+1. **Phase 1 Foundation** — Phase 1 begins by establishing the `develop` integration branch.
+2. **Branch Roles** — `main` remains the stable branch, while `develop` is the integration branch for ongoing feature development.
+3. Use **feature branches** created from `develop`.
+4. **Do not force push** to `main` or `develop`.
+5. **Do not reset** shared branches.
+6. Keep commits **focused** — one logical change per commit.
+7. **Do not commit secrets**, generated datasets, trained models, virtual environments, or `node_modules`.
+8. Write clear, conventional commit messages (e.g., `feat:`, `fix:`, `docs:`, `chore:`, `test:`).
 
 ### Phase Rule
 
