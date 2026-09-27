@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     LOG_LEVEL: str = "INFO"
+    DATABASE_URL: str = "postgresql+psycopg://postgres:your_password@localhost:5432/echo_ai"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
