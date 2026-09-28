@@ -117,6 +117,14 @@ The API will be available at `http://127.0.0.1:8000`.
 - **Database Readiness Check**: `GET /api/v1/health/db`
   Checks if the application can successfully connect to the PostgreSQL database.
 
+### Authentication (Phase 2.4)
+- **User Registration**: `POST /api/v1/auth/register`
+  Registers a new user given `email` and `password`. Passwords are safely hashed using bcrypt.
+- **User Login**: `POST /api/v1/auth/login`
+  Authenticates a user and returns a standard JWT Bearer access token.
+- **Get Current User**: `GET /api/v1/auth/me`
+  Protected endpoint demonstrating JWT authentication and returning the current user profile.
+
 ## Running Tests
 Run the full test suite from the `backend/` directory:
 ```bash
