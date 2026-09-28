@@ -16,38 +16,46 @@ Create a conversational AI system that truly *listens* — understanding not jus
 
 ## Current Phase
 
-### ✅ Phase 1 — Development Environment & Repository Foundation
+### 🔍 Phase 2.5 — API Contracts & Service Interfaces (in review)
 
-The project is currently in Phase 1. This phase establishes:
+| Phase | Scope | Status |
+|---|---|---|
+| 1 | Development environment & repository foundation | ✅ Completed |
+| 2.1 | Backend foundation (FastAPI, config, health) | ✅ Completed |
+| 2.2 | Database foundation (SQLAlchemy, PostgreSQL config, Alembic) | ✅ Completed |
+| 2.3 | Domain models (User, Conversation, Message) | ✅ Completed |
+| 2.4 | Authentication (register, login, JWT) | ✅ Completed |
+| 2.5 | API contracts & service interfaces | 🔍 PR open against `develop`, awaiting review |
+| 2.6 | Audio preprocessing | ⏭️ Next — spec proposed, not started |
+| 2.7 | Audio feature extraction | 🔮 Planned |
 
-- [x] Git repository with branching strategy
-- [x] Project directory structure
-- [x] Environment variable strategy
-- [x] Documentation foundation
-- [x] Agent instructions for AI-assisted development
-- [x] Development workflow documentation
-- [x] Environment validation tooling
+See [`docs/phases/README.md`](docs/phases/README.md) for details.
 
-> **No AI/ML functionality, application logic, or deployment infrastructure has been implemented yet.** All features listed below are **planned**.
+> **No AI/ML, speech, RAG, LLM or safety functionality has been implemented yet.** The AI endpoints defined in Phase 2.5 are contracts only and return `501 Not Implemented`.
 
 ---
 
 ## Planned Capabilities
 
+Legend: ✅ implemented and tested · 📐 API contract defined, not implemented (returns `501`) · 🔮 planned
+
 | Capability | Status | Description |
 |---|---|---|
-| Text conversation | 🔮 Planned | Real-time text-based chat interface |
-| Voice input | 🔮 Planned | Microphone capture and audio streaming |
-| Speech-to-text | 🔮 Planned | Whisper-based transcription |
-| Voice emotion analysis | 🔮 Planned | Emotion detection from audio features |
-| Text/NLP analysis | 🔮 Planned | Sentiment, intent, and entity extraction |
-| Multimodal fusion | 🔮 Planned | Combined audio + text signal analysis |
-| Conversation context | 🔮 Planned | Multi-turn conversation history |
+| User accounts & authentication | ✅ Implemented | Register, login, JWT-protected endpoints |
+| Text conversation | 📐 Contract only | `POST /api/v1/chat` |
+| Conversation history | 📐 Contract only | `GET /api/v1/history` |
+| Voice input | 🔮 Planned | Microphone capture and audio upload (25 MB upload limit enforced) |
+| Audio preprocessing | 🔮 Planned (Phase 2.6) | Resampling, normalization, silence removal |
+| Speech-to-text | 🔮 Planned | Transcription (model not yet selected) |
+| Voice emotion analysis | 📐 Contract only | `POST /api/v1/emotion/analyze` |
+| Text/NLP analysis | 🔮 Planned | Sentiment and emotion (internal contract defined) |
+| Multimodal fusion | 📐 Contract only | `POST /api/v1/emotion/fusion` |
 | User memory | 🔮 Planned | Opt-in persistent user preferences |
-| RAG | 🔮 Planned | Retrieval-Augmented Generation |
-| LLM integration | 🔮 Planned | API-based response generation |
-| Safety guardrails | 🔮 Planned | Content filtering and bias detection |
-| Analytics | 🔮 Planned | Conversation quality and usage metrics |
+| RAG | 📐 Contract only | `POST /api/v1/rag/retrieve` |
+| LLM integration | 🔮 Planned | API-based response generation (internal contract defined) |
+| Safety guardrails | 🔮 Planned | Input/output guardrails (internal contract defined) |
+| Feedback | 📐 Contract only | `POST /api/v1/feedback` |
+| Analytics | 📐 Contract only | `GET /api/v1/analytics` |
 
 ---
 
@@ -79,14 +87,15 @@ For detailed architecture documentation, see [`docs/architecture/ARCHITECTURE.md
 | Layer | Technology | Status |
 |---|---|---|
 | Frontend | React + Vite + Tailwind CSS | 🔮 Planned |
-| Backend | Python + FastAPI | 🔮 Planned |
-| Database | PostgreSQL | 🔮 Planned |
+| Backend | Python + FastAPI, Pydantic, PyJWT, bcrypt | ✅ In use |
+| Database | PostgreSQL (SQLAlchemy 2.x, Alembic, psycopg) | ✅ Configured |
 | ML | Python, scikit-learn, librosa, NumPy, pandas | 🔮 Planned |
 | Speech | Whisper (or equivalent) | 🔮 Planned |
 | NLP | Transformers / NLP tooling | 🔮 Planned |
 | RAG | Embeddings + Vector DB | 🔮 Planned |
 | LLM | API-based (e.g., OpenAI, Anthropic) | 🔮 Planned |
-| Testing | Pytest, Vitest/Jest | 🔮 Planned |
+| Testing | Pytest (backend) | ✅ In use |
+| Testing | Vitest/Jest (frontend) | 🔮 Planned |
 | Infrastructure | Docker, Docker Compose, GitHub Actions | 🔮 Planned |
 
 For detailed technology decisions, see [`docs/architecture/TECH-STACK.md`](docs/architecture/TECH-STACK.md).
@@ -134,16 +143,14 @@ ECHO-AI/
 
 | Phase | Focus | Status |
 |---|---|---|
-| **Phase 1** | Development environment & repository foundation | ✅ Current |
-| **Phase 2** | Backend API, database, authentication | 🔮 Planned |
-| **Phase 3** | Frontend application | 🔮 Planned |
-| **Phase 4** | ML pipelines (audio + NLP) | 🔮 Planned |
-| **Phase 5** | RAG system & vector search | 🔮 Planned |
-| **Phase 6** | LLM integration & response generation | 🔮 Planned |
-| **Phase 7** | Safety guardrails & content filtering | 🔮 Planned |
-| **Phase 8** | Multimodal fusion & advanced features | 🔮 Planned |
-| **Phase 9** | Analytics, monitoring & MLOps | 🔮 Planned |
-| **Phase 10** | Production deployment & CI/CD | 🔮 Planned |
+| **Phase 1** | Development environment & repository foundation | ✅ Completed |
+| **Phase 2.1–2.4** | Backend, database, domain models, authentication | ✅ Completed |
+| **Phase 2.5** | API contracts & service interfaces | 🔍 In review |
+| **Phase 2.6** | Audio preprocessing | ⏭️ Next |
+| **Phase 2.7** | Audio feature extraction | 🔮 Planned |
+| Later | Emotion models & inference, speech-to-text, NLP, fusion, context & memory, LLM, RAG, safety, frontend, feedback & analytics, deployment, MLOps | 🔮 Phases not yet defined |
+
+Each phase is defined and approved before implementation starts. See [`docs/phases/README.md`](docs/phases/README.md).
 
 ---
 
@@ -168,7 +175,7 @@ cd ECHO-AI
 cp .env.example .env
 
 # Edit .env with your configuration
-# (no actual services to configure in Phase 1)
+# (the backend reads its own settings from backend/.env — see backend/.env.example)
 
 # Run environment validation
 # On Windows (PowerShell):
@@ -177,6 +184,9 @@ cp .env.example .env
 # On Linux/macOS:
 bash scripts/check_environment.sh
 ```
+
+For backend setup (virtual environment, migrations, running the API), see
+[`backend/README.md`](backend/README.md).
 
 ### Environment Variables
 
@@ -188,14 +198,17 @@ See `.env.example` for all available configuration options.
 
 ## Git Workflow
 
-1. **`main`** — Production-ready code. Protected branch.
+1. **`main`** — Stable branch. Protected.
 2. **`develop`** — Integration branch for active development.
-3. **Feature branches** — Branch from `develop`, merge back via PR.
+3. **Feature branches** — Branch from `develop`, open a PR into `develop`, merge after human review.
+
+PRs #1–#4 (Phases 2.1–2.4) were merged into `main` and then merged back into
+`develop`; from Phase 2.5 onward, phase PRs target `develop`.
 
 ### Branch Naming
 
 ```
-feat/<feature-name>
+feature/<phase-or-feature>     e.g. feature/phase2-contracts
 fix/<bug-description>
 docs/<documentation-topic>
 chore/<maintenance-task>
@@ -227,24 +240,16 @@ test: add unit tests for emotion classifier
 
 ## Testing
 
-Tests are organized under `tests/` mirroring the source structure:
-
-```
-tests/
-├── backend/       # Backend API and service tests
-├── frontend/      # Frontend component and integration tests
-├── ml/            # ML model and pipeline tests
-├── rag/           # RAG system tests
-└── integration/   # Cross-module integration tests
-```
+The backend test suite lives in `backend/tests/` and is run from the
+`backend/` directory with the backend virtual environment active:
 
 ```bash
-# Run backend tests (when implemented)
-pytest tests/backend/
-
-# Run all tests
+cd backend
 pytest
 ```
+
+The top-level `tests/` directories (`backend/`, `frontend/`, `ml/`, `rag/`,
+`integration/`) are placeholders for future modules and contain no tests yet.
 
 ---
 
@@ -252,11 +257,9 @@ pytest
 
 See the [Development Roadmap](#development-roadmap) for the full plan. Key upcoming milestones:
 
-- **Phase 2**: FastAPI backend with PostgreSQL, user authentication, session management
-- **Phase 3**: React frontend with real-time chat interface
-- **Phase 4**: Audio emotion detection and NLP analysis pipelines
-- **Phase 5**: RAG with vector search for knowledge retrieval
-- **Phase 6**: LLM-powered response generation
+- **Phase 2.6**: Audio preprocessing — spec in [`docs/phases/PHASE-2.6-AUDIO-PREPROCESSING.md`](docs/phases/PHASE-2.6-AUDIO-PREPROCESSING.md) (awaiting approval)
+- **Phase 2.7**: Audio feature extraction
+- Later phases (emotion models, speech-to-text, NLP, fusion, LLM, RAG, safety, frontend) will be defined one at a time
 
 ---
 

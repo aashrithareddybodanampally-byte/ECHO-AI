@@ -19,32 +19,50 @@ ECHO-AI is a **multimodal conversational AI system** designed to:
 - Apply **safety controls and guardrails** to all outputs
 - Provide **analytics** on conversation quality, user satisfaction, and system performance
 
+Emotion and sentiment outputs are model predictions, never clinical or
+psychological diagnoses.
+
 ---
 
 ## Current Status
 
-### Phase 1 — Development Environment & Repository Foundation ✅ (In Progress)
+| Phase | Scope | Status |
+|---|---|---|
+| 1 | Development environment & repository foundation | ✅ Completed |
+| 2.1 | Backend foundation | ✅ Completed |
+| 2.2 | Database foundation | ✅ Completed |
+| 2.3 | Domain models | ✅ Completed |
+| 2.4 | Authentication | ✅ Completed |
+| 2.5 | API contracts & service interfaces | 🔍 Implemented, PR open against `develop`, awaiting review |
+| 2.6 | Audio preprocessing | ⏭️ Next — spec proposed, not started |
+| 2.7 | Audio feature extraction | 🔮 Planned |
 
-Phase 1 establishes:
+Details, branches and PRs: [`docs/phases/README.md`](docs/phases/README.md).
 
-- Git repository and branching strategy
-- Project directory structure
-- Environment variable strategy
-- Documentation foundation
-- Agent instructions
-- Development workflow documentation
-- Validation tooling
+### Implemented (and covered by the backend test suite)
 
-### What Is NOT Implemented
+- **Backend** (`backend/`): FastAPI app, environment-based settings, logging, global error handling, `GET /api/v1/health`.
+- **Database**: SQLAlchemy 2.x engine/session, PostgreSQL configuration via `DATABASE_URL`, Alembic migrations, `GET /api/v1/health/db`.
+- **Domain models**: `User`, `Conversation`, `Message` with ownership relationships.
+- **Authentication**: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me` (bcrypt password hashing, HS256 JWT).
+- **API contracts (Phase 2.5)**: schemas and service interfaces for emotion analysis, fusion, retrieval, chat, feedback, history and analytics. These endpoints authenticate and validate input but return **`501 Not Implemented`** — no functionality behind them exists yet. See [`docs/api/CONTRACTS.md`](docs/api/CONTRACTS.md).
+- **Audio upload limit**: 25 MB, configurable via `MAX_AUDIO_UPLOAD_BYTES`.
 
-- No backend API
-- No frontend application
-- No database schema
-- No ML models or pipelines
-- No RAG system
-- No LLM integration
-- No authentication
-- No deployment infrastructure
+Testing note: the backend tests use SQLite in-memory databases, mocked
+sessions and dependency overrides. Migrations and queries have **not** been
+tested against a live PostgreSQL instance in the automated suite.
+
+### Not Implemented
+
+- Audio preprocessing, feature extraction, emotion models (voice or text)
+- Speech-to-text, NLP, multimodal fusion
+- Conversation context engine, short/long-term memory
+- RAG, embeddings, vector database
+- LLM integration
+- Safety guardrails
+- Conversation history, feedback and analytics logic (contracts only)
+- Frontend application
+- Docker, CI/CD, deployment, monitoring, MLOps
 
 ---
 
@@ -53,18 +71,18 @@ Phase 1 establishes:
 | Module | Directory | Description |
 |---|---|---|
 | **Frontend** | `frontend/` | React + Vite web application for the chat interface |
-| **Backend** | `backend/` | FastAPI REST/WebSocket API server |
-| **Database** | `database/` | PostgreSQL schemas, migrations, seed data |
-| **Audio ML** | `ml/audio/` | Speech emotion recognition, audio feature extraction |
+| **Backend** | `backend/` | FastAPI REST/WebSocket API server (foundation implemented) |
+| **Database** | `backend/alembic/` | PostgreSQL schema managed with Alembic migrations |
+| **Audio ML** | `ml/audio/` | Audio preprocessing (Phase 2.6), feature extraction (Phase 2.7), speech emotion recognition |
 | **NLP** | `ml/nlp/` | Text analysis, sentiment, intent classification |
-| **Speech-to-Text** | `ml/audio/` | Whisper-based transcription |
+| **Speech-to-Text** | `ml/audio/` | Transcription (provider/model not yet selected) |
 | **Multimodal Fusion** | `ml/models/` | Combining audio + text signals |
 | **Memory** | `backend/` | Conversation context & user-approved memory |
 | **RAG** | `rag/` | Document ingestion, embeddings, vector retrieval |
-| **LLM** | `backend/` | LLM API integration for response generation |
-| **Safety** | `safety/` | Content filtering, guardrails, bias detection |
+| **LLM** | `backend/` | LLM API integration behind a provider-agnostic interface |
+| **Safety** | `safety/` | Input/output guardrails, high-risk handling |
 | **Analytics** | `backend/` | Usage metrics, conversation quality tracking |
-| **Testing** | `tests/` | Unit, integration, and end-to-end tests |
+| **Testing** | `backend/tests/`, `tests/` | Unit, integration, and end-to-end tests |
 | **Infrastructure** | `infrastructure/` | Docker, CI/CD, monitoring, deployment |
 | **MLOps** | `infrastructure/` | Model versioning, experiment tracking, monitoring |
 
@@ -111,7 +129,11 @@ Phase 1 establishes:
          └────────────┘
 ```
 
-### Data Flow
+Of this diagram, only the Backend API (authentication, health) and the
+Database layer are implemented. The backend talks to every other component
+only through the service interfaces defined in Phase 2.5.
+
+### Data Flow (target)
 
 1. **User** sends text/voice input via the **Frontend**
 2. **Backend** receives the request, routes to processing pipelines
@@ -125,15 +147,13 @@ Phase 1 establishes:
 
 ## Currently Out of Scope
 
-The following are explicitly **not** part of Phase 1 and must not be implemented until their respective phases:
+The following must not be implemented until their phase is explicitly defined
+and approved:
 
-- Actual AI/ML model training or inference
+- AI/ML model training or inference (audio preprocessing is next, in Phase 2.6)
 - LLM API calls
-- Database schema creation
+- RAG / vector database setup
+- Safety guardrail logic
 - Frontend application code
-- Authentication system
-- Docker containerization
-- CI/CD pipeline execution
-- Production deployment
-- Real-time audio processing
-- Vector database setup
+- Docker containerization, CI/CD execution, production deployment
+- Real-time audio processing / streaming

@@ -1,7 +1,9 @@
 # ECHO-AI — Architecture
 
 > This document describes the **planned** high-level architecture of ECHO-AI.
-> As of Phase 1, only the repository foundation exists. No components are implemented yet.
+> Implemented so far (Phases 2.1–2.5): the Backend API foundation (health, authentication),
+> the Database layer, and contract-only service interfaces. Everything else is planned.
+> Phase status: [`docs/phases/README.md`](../phases/README.md).
 
 ---
 
@@ -59,23 +61,23 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
 - **Technology**: React + Vite + Tailwind CSS
 - **Responsibility**: User interface for text/voice chat, settings, analytics
 - **Communication**: REST and WebSocket connections to Backend API
-- **Status**: 🔮 Planned (Phase 3)
+- **Status**: 🔮 Planned (phase not yet defined)
 
 ### Backend API
 - **Technology**: Python + FastAPI
 - **Responsibility**: API gateway, request routing, session management, response orchestration
 - **Key Services**:
-  - Authentication & Authorization
+  - Authentication & Authorization (✅ implemented, Phase 2.4)
   - Session Manager
   - Conversation Manager
   - Memory Service (user-approved persistent context)
   - Response Orchestrator (coordinates ML, RAG, LLM, Safety)
-- **Status**: 🔮 Planned (Phase 2)
+- **Status**: ✅ Foundation implemented (Phases 2.1–2.4); AI endpoints defined as contracts returning `501` (Phase 2.5, see [`docs/api/CONTRACTS.md`](../api/CONTRACTS.md)). Session, conversation, memory and orchestration services are not implemented.
 
 ### Database
 - **Technology**: PostgreSQL
 - **Responsibility**: Persistent storage for users, sessions, conversations, preferences
-- **Status**: 🔮 Planned (Phase 2)
+- **Status**: ✅ Implemented (Phases 2.2–2.4): SQLAlchemy models `users`, `conversations`, `messages` with Alembic migrations. Not yet exercised against live PostgreSQL in the automated test suite.
 
 ### ML Pipeline
 - **Technology**: Python, scikit-learn, librosa, Transformers
@@ -83,7 +85,7 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
   - **Audio**: Speech-to-text (Whisper), emotion detection, audio feature extraction
   - **NLP**: Sentiment analysis, intent classification, entity extraction
   - **Fusion**: Multimodal signal combination
-- **Status**: 🔮 Planned (Phase 4)
+- **Status**: 🔮 Planned — audio preprocessing is Phase 2.6 (next), feature extraction Phase 2.7
 
 ### RAG System
 - **Technology**: Embeddings model + Vector database
@@ -91,16 +93,16 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
   - **Ingestion**: Document processing and chunking
   - **Embeddings**: Vector generation
   - **Retrieval**: Similarity search for relevant context
-- **Status**: 🔮 Planned (Phase 5)
+- **Status**: 🔮 Planned (phase not yet defined; `RetrievalService` contract defined in Phase 2.5)
 
 ### Safety & Guardrails
 - **Responsibility**: Content filtering, harmful content detection, bias mitigation, output validation
-- **Status**: 🔮 Planned (Phase 7)
+- **Status**: 🔮 Planned (phase not yet defined; `SafetyService` contract defined in Phase 2.5)
 
 ### LLM Integration
 - **Technology**: API-based LLM (e.g., OpenAI, Anthropic)
 - **Responsibility**: Response generation grounded in conversation context, ML analysis, and RAG results
-- **Status**: 🔮 Planned (Phase 6)
+- **Status**: 🔮 Planned (phase not yet defined; `LLMService` contract defined in Phase 2.5)
 
 ---
 
@@ -135,4 +137,8 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
 | Repository structure | ✅ Implemented |
 | Documentation foundation | ✅ Implemented |
 | Environment configuration | ✅ Implemented |
+| Backend foundation & health checks | ✅ Implemented (2.1) |
+| Database layer & migrations | ✅ Implemented (2.2, 2.3) |
+| Authentication (JWT, bcrypt) | ✅ Implemented (2.4) |
+| API contracts & service interfaces | 🔍 Implemented, in review (2.5) — endpoints return `501` |
 | Everything else | 🔮 Planned |

@@ -10,9 +10,24 @@
 
 ## Current Phase
 
-**Phase 1** — Development Environment & Repository Foundation
+**Phase 2.5** — API Contracts & Service Interfaces (implemented; PR open against `develop`, awaiting review)
 
-Phase 1 establishes the engineering foundation only. No AI/ML functionality, no application logic, no deployment infrastructure has been implemented yet.
+| Phase | Status |
+|---|---|
+| 1 — Repository foundation | ✅ Completed |
+| 2.1 — Backend foundation | ✅ Completed |
+| 2.2 — Database foundation | ✅ Completed |
+| 2.3 — Domain models | ✅ Completed |
+| 2.4 — Authentication | ✅ Completed |
+| 2.5 — API contracts & service interfaces | 🔍 In review (`feature/phase2-contracts`) |
+| 2.6 — Audio preprocessing | ⏭️ Next — spec proposed, not started |
+| 2.7 — Feature extraction | 🔮 Planned |
+
+What exists: a FastAPI backend with health checks, PostgreSQL/Alembic configuration, User/Conversation/Message models, JWT authentication, and **contract-only** AI endpoints that return `501 Not Implemented`.
+
+What does **not** exist: any AI/ML, speech, NLP, fusion, RAG, LLM, safety, memory, frontend, Docker or deployment functionality.
+
+Phase details and status: [`docs/phases/README.md`](docs/phases/README.md).
 
 ---
 
@@ -24,7 +39,7 @@ Phase 1 establishes the engineering foundation only. No AI/ML functionality, no 
 4. **ML isolated from application logic** — ML components expose prediction interfaces consumed by the backend; they never import backend modules directly.
 5. **Configuration through environment variables** — All secrets, connection strings, and tunable parameters come from `.env` (never committed). See `.env.example` for the template.
 6. **No secrets in source code** — API keys, passwords, tokens, and certificates must never appear in committed files.
-7. **Testable components** — Every module should be independently testable. Tests live under `tests/` mirroring the source structure.
+7. **Testable components** — Every module should be independently testable. Tests live under `tests/` mirroring the source structure (existing backend tests live in `backend/tests/`).
 8. **Documentation alongside implementation** — When you build a feature, update the relevant docs in `docs/`.
 
 ---
@@ -53,7 +68,9 @@ Phase 1 establishes the engineering foundation only. No AI/ML functionality, no 
 
 1. **Phase 1 Foundation** — Phase 1 begins by establishing the `develop` integration branch.
 2. **Branch Roles** — `main` remains the stable branch, while `develop` is the integration branch for ongoing feature development.
-3. Use **feature branches** created from `develop`.
+3. Use **feature branches** created from `develop`, named `feature/<phase-or-feature>` (e.g. `feature/phase2-contracts`).
+   Open the PR into `develop`. Agents open PRs but **do not merge** them; merging follows human review.
+   (PRs #1–#4 for Phases 2.1–2.4 were merged into `main` and then merged back into `develop`.)
 4. **Do not force push** to `main` or `develop`.
 5. **Do not reset** shared branches.
 6. Keep commits **focused** — one logical change per commit.
@@ -70,8 +87,8 @@ Phase 1 establishes the engineering foundation only. No AI/ML functionality, no 
 
 ```
 ECHO-AI/
-├── frontend/           # React + Vite frontend (Phase 3+)
-├── backend/            # Python FastAPI backend (Phase 2+)
+├── frontend/           # React + Vite frontend (not started)
+├── backend/            # Python FastAPI backend (Phases 2.1–2.5; tests in backend/tests/)
 ├── ml/                 # Machine learning pipelines
 │   ├── audio/          # Audio/speech processing
 │   ├── nlp/            # NLP models and processing
@@ -108,4 +125,7 @@ ECHO-AI/
 | `.env.example` | Environment variable template |
 | `.gitignore` | Git ignore rules |
 | `docs/` | All project documentation |
+| `docs/phases/README.md` | Implementation phase status and workflow |
+| `docs/api/CONTRACTS.md` | Versioned API & service contracts (Phase 2.5) |
+| `backend/README.md` | Backend setup, endpoints and tests |
 | `scripts/check_environment.ps1` | Development environment validation |

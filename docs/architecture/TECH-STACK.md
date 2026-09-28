@@ -1,7 +1,8 @@
 # ECHO-AI — Technology Stack
 
 > This document records the **planned** technology choices for ECHO-AI.
-> These are design decisions — most dependencies are **not yet installed**.
+> Backend dependencies are installed (see `backend/requirements.txt`); all other
+> choices are planned and **not yet installed**.
 
 ---
 
@@ -30,7 +31,10 @@
 | Pydantic | Data validation & settings | 2+ |
 | SQLAlchemy | ORM & database toolkit | 2+ |
 | Alembic | Database migrations | Latest |
-| python-dotenv | Environment variable loading | Latest |
+| pydantic-settings | Environment-based settings (used instead of python-dotenv) | 2+ |
+| psycopg | PostgreSQL driver | 3+ |
+| PyJWT | JWT access tokens | 2.8+ |
+| bcrypt | Password hashing | <4.0 |
 
 **Rationale**: FastAPI provides automatic OpenAPI docs, async support, and Pydantic-based validation. SQLAlchemy 2.0 offers both ORM and Core patterns. Alembic handles schema evolution.
 
@@ -71,7 +75,7 @@
 | Vector database (TBD) | Similarity search & storage |
 | LangChain or LlamaIndex | RAG orchestration (under evaluation) |
 
-**Rationale**: RAG technology choices will be finalized during Phase 5 based on scale requirements and embedding model selection.
+**Rationale**: RAG technology choices will be finalized during the RAG phase based on scale requirements and embedding model selection.
 
 ---
 
@@ -122,6 +126,10 @@
 
 ## Installation Status
 
-> **Phase 1**: No production dependencies are installed. Only the development environment (Git, Python, Node.js) is required.
+> **Installed**: backend dependencies in `backend/requirements.txt` (FastAPI, Uvicorn, pydantic-settings,
+> SQLAlchemy, psycopg, Alembic, PyJWT, bcrypt, passlib, email-validator, pytest, httpx).
 >
-> Dependencies will be installed incrementally as each phase begins, keeping the project lightweight.
+> **Not installed**: all ML, RAG, LLM, frontend and infrastructure dependencies. Phase 2.6 proposes
+> `numpy`, `soundfile` and `scipy` (pending approval).
+>
+> Dependencies are added incrementally as each phase begins, with justification in the PR.
