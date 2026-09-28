@@ -161,3 +161,7 @@ docker-compose.override.yml
 *.temp
 .cache/
 .parcel-cache/
+
+# Local SQLite development databases
+*.db
+*.sqlite3

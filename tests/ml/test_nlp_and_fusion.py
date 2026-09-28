@@ -21,6 +21,10 @@ def test_text_analysis(text, sentiment, emotion):
     assert result["model_version"] == MODEL_VERSION
 
 
+def test_negative_phrase_starting_with_negation_is_detected():
+    assert analyzer.analyze("Honestly I don't want to live anymore.")["emotion"] == "sad"
+
+
 def test_negation_suppresses_keyword():
     assert analyzer.analyze("I am not happy").get("emotion") != "happy"
 

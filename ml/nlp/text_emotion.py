@@ -20,7 +20,8 @@ EMOTION_KEYWORDS: dict[str, tuple[str, ...]] = {
     "happy": ("happy", "glad", "great", "excited", "joy", "love", "wonderful", "awesome",
               "proud", "grateful", "relieved", "delighted", "fantastic", "good news"),
     "sad": ("sad", "down", "unhappy", "depressed", "lonely", "cry", "crying", "hopeless",
-            "miserable", "heartbroken", "empty", "tired", "exhausted", "lost"),
+            "miserable", "heartbroken", "empty", "tired", "exhausted", "lost",
+            "want to die", "don't want to live", "no reason to live", "worthless"),
     "angry": ("angry", "mad", "furious", "annoyed", "frustrated", "frustrating", "irritated",
               "hate", "rage", "fed up", "pissed"),
     "fearful": ("scared", "afraid", "anxious", "worried", "nervous", "panic", "stress",
@@ -51,8 +52,9 @@ def _count_hits(text: str) -> dict[str, int]:
                 if tokens[i:i + n] != kw_tokens:
                     continue
                 window = tokens[max(0, i - 3):i]
-                # "can't handle" is itself a negative phrase; don't treat "can't" as negating it.
-                if keyword.startswith("can't") or not _NEGATIONS.intersection(window):
+                # Phrases that start with a negation ("can't handle", "don't want to live")
+                # are themselves the signal; don't treat that word as negating them.
+                if kw_tokens[0] in _NEGATIONS or not _NEGATIONS.intersection(window):
                     count += 1
         if count:
             hits[emotion] = count

@@ -25,6 +25,15 @@ app.add_middleware(
 # Setup centralized exception handling
 setup_exception_handlers(app)
 
+if settings.DATABASE_URL.startswith("sqlite"):
+    # Local-development convenience only: SQLite cannot run the Alembic history
+    # (ALTER COLUMN), so create the schema directly. PostgreSQL uses `alembic upgrade head`.
+    from app import models as _models  # noqa: F401  (registers tables; must not rebind `app`)
+    from app.db.base import Base
+    from app.db.session import engine
+
+    Base.metadata.create_all(bind=engine)
+
 # Register API routers
 app.include_router(health.router, prefix="/api/v1", tags=["Health"])
 app.include_router(auth.router, prefix="/api/v1", tags=["Authentication"])
