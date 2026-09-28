@@ -42,6 +42,18 @@ class ResourceNotFoundError(ServiceError):
     """Resource does not exist or is not owned by the user. Maps to 404."""
 
 
+class UnsupportedMediaError(ServiceError):
+    """Audio container/codec is not supported. Maps to 415."""
+
+
+class ServiceUnavailableError(ServiceError):
+    """A dependency (trained model, speech-to-text) is not available. Maps to 503."""
+
+
+class ConflictError(ServiceError):
+    """The request conflicts with the user's settings (e.g. memory disabled). Maps to 409."""
+
+
 class VoiceEmotionService(Protocol):
     def analyze(self, audio: bytes, content_type: str) -> VoiceEmotionResult:
         """Predict emotion from audio. Raises InvalidInputError for unusable audio."""
@@ -95,6 +107,10 @@ class FeedbackService(Protocol):
 
 class HistoryService(Protocol):
     def list_conversations(self, user: User, limit: int, offset: int) -> HistoryResponse:
+        ...
+
+    def delete_conversation(self, user: User, conversation_id: int) -> None:
+        """Raises ResourceNotFoundError if the conversation is not the user's."""
         ...
 
 

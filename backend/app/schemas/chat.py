@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.models.message import MessageRole
 from app.schemas.emotion import FusionResult
 from app.schemas.rag import RetrievedChunk, reject_blank
+from app.schemas.safety import SafetyLevel
 
 
 class MessageResponse(BaseModel):
@@ -54,3 +55,10 @@ class ChatResponse(BaseModel):
     sources: list[RetrievedChunk] = Field(default_factory=list)
     # Present only when emotion signals were available for this turn.
     emotion: FusionResult | None = None
+    safety_level: SafetyLevel = SafetyLevel.NORMAL
+    # Transcript of the user's audio (voice turns only).
+    transcript: str | None = None
+    # Which model produced the reply ("safety-protocol" when the LLM was bypassed).
+    llm_model: str | None = None
+    # Measured per-stage latency for this request, in milliseconds.
+    timings_ms: dict[str, float] = Field(default_factory=dict)

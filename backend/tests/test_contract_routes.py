@@ -1,9 +1,9 @@
 """
 Route-level tests for the Phase 2.5 API contracts.
 
-No service implementations exist yet, so routes must return 501 unless a
-test substitutes a fake through app.dependency_overrides. Fakes here only
-exercise the contract shape; they are not implementations.
+Services are replaced with fakes through app.dependency_overrides so these
+tests exercise only the HTTP contract (auth, validation, status codes,
+response shape). End-to-end behavior is covered in test_pipeline.py.
 """
 
 from datetime import datetime, timezone
@@ -89,13 +89,6 @@ def test_requires_authentication(method, path, kwargs):
 def test_rejects_invalid_token(method, path, kwargs):
     response = _call(method, path, kwargs, headers={"Authorization": "Bearer invalid"})
     assert response.status_code == 401
-
-
-@pytest.mark.parametrize("method,path,kwargs", ENDPOINTS)
-def test_returns_501_until_service_is_implemented(authed, method, path, kwargs):
-    response = _call(method, path, kwargs)
-    assert response.status_code == 501
-    assert "not implemented" in response.json()["detail"]
 
 
 def test_openapi_documents_contract_paths():

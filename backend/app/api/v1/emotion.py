@@ -13,7 +13,7 @@ router = APIRouter(prefix="/emotion", tags=["Emotion"])
 # The body is read manually (not declared as a parameter) so that FastAPI does
 # not buffer it before authentication runs, and so the size limit is enforced
 # while streaming.
-_AUDIO_REQUEST_BODY = {
+AUDIO_REQUEST_BODY = {
     "requestBody": {
         "required": True,
         "content": {"audio/*": {"schema": {"type": "string", "format": "binary"}}},
@@ -21,7 +21,7 @@ _AUDIO_REQUEST_BODY = {
 }
 
 
-async def _read_audio_body(request: Request, max_bytes: int) -> bytes:
+async def read_audio_body(request: Request, max_bytes: int) -> bytes:
     too_large = HTTPException(
         status_code=413,
         detail=f"Audio upload exceeds the maximum size of {max_bytes} bytes",
@@ -38,7 +38,7 @@ async def _read_audio_body(request: Request, max_bytes: int) -> bytes:
     return bytes(body)
 
 
-@router.post("/analyze", response_model=VoiceEmotionResult, openapi_extra=_AUDIO_REQUEST_BODY)
+@router.post("/analyze", response_model=VoiceEmotionResult, openapi_extra=AUDIO_REQUEST_BODY)
 async def analyze_voice_emotion(
     request: Request,
     current_user: User = Depends(get_current_user),
@@ -54,7 +54,7 @@ async def analyze_voice_emotion(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail="Content-Type must be an audio/* media type",
         )
-    audio = await _read_audio_body(request, settings.MAX_AUDIO_UPLOAD_BYTES)
+    audio = await read_audio_body(request, settings.MAX_AUDIO_UPLOAD_BYTES)
     if not audio:
         raise HTTPException(
             status_code=422,

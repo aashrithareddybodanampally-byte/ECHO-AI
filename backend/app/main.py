@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.api.v1 import health, auth, emotion, rag, chat, feedback, history, analytics
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1 import health, auth, emotion, rag, chat, feedback, history, analytics, memory
 from app.config import settings, setup_logging
 from app.core.exceptions import setup_exception_handlers
 
@@ -11,6 +12,14 @@ app = FastAPI(
     version=settings.APP_VERSION,
     description="Backend API for ECHO-AI",
     debug=settings.DEBUG
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Setup centralized exception handling
@@ -25,3 +34,4 @@ app.include_router(chat.router, prefix="/api/v1", tags=["Chat"])
 app.include_router(feedback.router, prefix="/api/v1", tags=["Feedback"])
 app.include_router(history.router, prefix="/api/v1", tags=["History"])
 app.include_router(analytics.router, prefix="/api/v1", tags=["Analytics"])
+app.include_router(memory.router, prefix="/api/v1", tags=["Memory & Settings"])
