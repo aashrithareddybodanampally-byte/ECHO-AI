@@ -1,6 +1,6 @@
 # ECHO-AI Backend Foundation
 
-This is the FastAPI backend foundation for ECHO-AI (Phase 2.1), Database Foundation (Phase 2.2), and Domain Models (Phase 2.3).
+This is the FastAPI backend foundation for ECHO-AI (Phase 2.1), Database Foundation (Phase 2.2), Domain Models (Phase 2.3), Authentication (Phase 2.4), and API Contracts (Phase 2.5).
 
 ## Prerequisites
 - Python >= 3.10
@@ -125,6 +125,19 @@ The API will be available at `http://127.0.0.1:8000`.
 - **Get Current User**: `GET /api/v1/auth/me`
   Protected endpoint demonstrating JWT authentication and returning the current user profile.
 
+### API Contracts (Phase 2.5)
+Request/response contracts and service interfaces are defined for the planned AI endpoints. **No implementations exist yet:** each endpoint requires a Bearer token, validates its input, and returns `501 Not Implemented`.
+
+- `POST /api/v1/emotion/analyze` — voice emotion (raw `audio/*` body)
+- `POST /api/v1/emotion/fusion` — multimodal fusion
+- `POST /api/v1/rag/retrieve` — retrieval with sources
+- `POST /api/v1/chat` — conversation turn
+- `POST /api/v1/feedback` — "was this helpful?" feedback
+- `GET /api/v1/history` — the current user's conversations
+- `GET /api/v1/analytics` — per-user summary
+
+Full contract, error behavior and open questions: [`docs/api/CONTRACTS.md`](../docs/api/CONTRACTS.md).
+
 ## Running Tests
 Run the full test suite from the `backend/` directory:
 ```bash
@@ -146,6 +159,7 @@ pytest tests/test_models.py -v
 - `app/schemas/`: Pydantic models for request/response validation.
 - `app/db/`: Database configuration, sessions, declarative base, and FastAPI dependencies.
 - `app/models/`: SQLAlchemy domain models (User, Conversation, Message).
+- `app/services/`: Service boundary interfaces and route providers (Phase 2.5; no implementations yet).
 - `tests/`: Automated test suite.
 - `alembic/`: Database migration scripts.
 
