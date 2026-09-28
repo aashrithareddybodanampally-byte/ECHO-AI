@@ -30,6 +30,7 @@ clinical or psychological diagnoses**, and must never be presented as such.
 |---|---|
 | `401` | Missing, malformed, invalid or expired token. Checked before anything else. |
 | `404` | Referenced conversation/message does not exist **or** belongs to another user. Body is always `{"detail": "Not found"}`. |
+| `413` | `POST /emotion/analyze` body larger than `MAX_AUDIO_UPLOAD_BYTES` (25 MB). |
 | `415` | `POST /emotion/analyze` with a non-`audio/*` `Content-Type`. |
 | `422` | Request fails schema validation, or a service rejects well-formed but unusable input (e.g. no speech detected). |
 | `501` | The service behind the endpoint is not implemented yet (current state for all endpoints below). |
@@ -47,6 +48,15 @@ measured in the phase that implements each service.
 
 Request: raw audio bytes as the request body, `Content-Type: audio/*`
 (e.g. `audio/wav`). Empty body → `422`.
+
+Maximum upload size: **25 MB** (26,214,400 bytes), configured by the
+`MAX_AUDIO_UPLOAD_BYTES` setting (`backend/app/config.py`, overridable via
+environment). A larger `Content-Length`, or a streamed body that exceeds the
+limit, is rejected with `413` without passing the audio to the service.
+
+Check order: authentication (`401`) → service availability (`501`) →
+`Content-Type` (`415`) → size (`413`) → empty body (`422`). The body is not
+read until authentication has succeeded.
 
 Response `200` — `VoiceEmotionResult`:
 
@@ -177,7 +187,7 @@ dependencies in `backend/app/services/providers.py`, which currently raise
 
 ## Open questions (to be decided by the phase that implements each service)
 
-- Supported audio formats/codecs and the maximum upload size for `/emotion/analyze`. **Known gap:** FastAPI reads the full request body before running auth, so the endpoint currently buffers an upload of any size (even from unauthenticated callers) before returning `401`/`501`. A size limit (e.g. a request-size check on `Content-Length` / streamed bytes) must be decided and added.
+- Supported audio formats/codecs for `/emotion/analyze` (to be decided in Phase 2.6 — see [`docs/phases/PHASE-2.6-AUDIO-PREPROCESSING.md`](../phases/PHASE-2.6-AUDIO-PREPROCESSING.md)).
 - Emotion label set (depends on the chosen dataset).
 - Text sentiment/emotion label sets and model.
 - Speech-to-text model/provider and language handling.

@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "insecure-default-secret-key-do-not-use-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    # Audio upload settings (25 MB = 25 * 1024 * 1024 bytes)
+    MAX_AUDIO_UPLOAD_BYTES: int = 25 * 1024 * 1024
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 settings = Settings()

@@ -12,6 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.deps import get_current_user
+from app.config import settings
 from app.main import app
 from app.models.user import User
 from app.schemas.analytics import AnalyticsResponse
@@ -154,6 +155,57 @@ def test_analyze_unusable_audio_returns_422(authed):
     )
     assert response.status_code == 422
     assert response.json() == {"detail": "No speech detected"}
+
+
+def test_audio_upload_limit_default_is_25_mb():
+    assert settings.MAX_AUDIO_UPLOAD_BYTES == 25 * 1024 * 1024
+
+
+def test_analyze_accepts_body_at_limit(authed, monkeypatch):
+    monkeypatch.setattr(settings, "MAX_AUDIO_UPLOAD_BYTES", 8)
+    fake = FakeVoiceEmotion()
+    authed(providers.get_voice_emotion_service, lambda: fake)
+    response = client.post(
+        "/api/v1/emotion/analyze", content=b"12345678", headers={"Content-Type": "audio/wav"}
+    )
+    assert response.status_code == 200
+    assert fake.calls == [(b"12345678", "audio/wav")]
+
+
+def test_analyze_rejects_oversized_content_length(authed, monkeypatch):
+    monkeypatch.setattr(settings, "MAX_AUDIO_UPLOAD_BYTES", 8)
+    fake = FakeVoiceEmotion()
+    authed(providers.get_voice_emotion_service, lambda: fake)
+    response = client.post(
+        "/api/v1/emotion/analyze", content=b"123456789", headers={"Content-Type": "audio/wav"}
+    )
+    assert response.status_code == 413
+    assert fake.calls == []
+
+
+def test_analyze_rejects_oversized_stream_without_content_length(authed, monkeypatch):
+    monkeypatch.setattr(settings, "MAX_AUDIO_UPLOAD_BYTES", 8)
+    fake = FakeVoiceEmotion()
+    authed(providers.get_voice_emotion_service, lambda: fake)
+
+    def chunks():
+        yield b"12345"
+        yield b"67890"
+
+    # A generator body is sent chunked, with no Content-Length header.
+    response = client.post(
+        "/api/v1/emotion/analyze", content=chunks(), headers={"Content-Type": "audio/wav"}
+    )
+    assert response.status_code == 413
+    assert fake.calls == []
+
+
+def test_analyze_authenticates_before_checking_size(monkeypatch):
+    monkeypatch.setattr(settings, "MAX_AUDIO_UPLOAD_BYTES", 8)
+    response = client.post(
+        "/api/v1/emotion/analyze", content=b"x" * 100, headers={"Content-Type": "audio/wav"}
+    )
+    assert response.status_code == 401
 
 
 class FakeFusion:
