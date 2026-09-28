@@ -25,7 +25,11 @@ _HIGH_RISK_PATTERNS = {
         r"\b(hurt|harm|cut|burn)(ing)? my ?self\b", r"\bself[- ]?harm", r"\boverdos(e|ing)\b",
     ],
     "harm_to_others": [
-        r"\b(kill|hurt|harm|attack|shoot|stab)(ing)? (him|her|them|someone|somebody|people|my \w+)\b",
+        # Requires stated intent toward a person; "I hurt my knee" must not match.
+        r"\b(want|going|gonna|plan(ning)?|about|trying) to (kill|hurt|harm|attack|shoot|stab) "
+        r"(him|her|them|someone|somebody|people|everyone|my (mom|mother|dad|father|brother|sister|"
+        r"wife|husband|partner|girlfriend|boyfriend|friend|family|boss|teacher|roommate|child|kids?))\b",
+        r"\bi('ll| will) (kill|hurt|shoot|stab) (him|her|them|someone|somebody|people)\b",
     ],
 }
 
@@ -47,7 +51,8 @@ _OUTPUT_PATTERNS = {
         r"\bi (can )?diagnose\b", r"\bmy diagnosis\b",
     ],
     "medication_dosing": [
-        r"\b\d+(\.\d+)?\s?(mg|milligrams?|ml)\b",
+        # Drug-dose units only: "500 ml of water" is not dosing advice.
+        r"\b\d+(\.\d+)?\s?(mg|milligrams?|mcg|micrograms?)\b",
         r"\b(take|double|increase|stop taking) (your |the )?(dose|dosage|medication|pills|meds)\b",
     ],
     "self_harm_method": [
@@ -77,8 +82,13 @@ SAFE_FALLBACK_RESPONSE = (
 )
 
 
+def normalize(text: str) -> str:
+    """Lowercase and map typographic apostrophes (default on many phone keyboards) to ASCII."""
+    return text.lower().replace("’", "'").replace("‘", "'").replace("ʼ", "'")
+
+
 def _match(text: str, groups: dict[str, list[str]]) -> list[str]:
-    lowered = text.lower()
+    lowered = normalize(text)
     return [name for name, patterns in groups.items()
             if any(re.search(p, lowered) for p in patterns)]
 

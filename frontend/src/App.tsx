@@ -34,6 +34,9 @@ export default function App() {
     setAuthed(false);
     setConversations([]);
     setActiveId(null);
+    // Never let the next account on this browser see the previous one's messages.
+    setInitialMessages([]);
+    setChatKey((k) => k + 1);
   }, []);
 
   useEffect(() => {

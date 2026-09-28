@@ -67,8 +67,14 @@ def _base_content_type(content_type: str) -> str:
     return content_type.split(";")[0].strip().lower()
 
 
-def decode_audio(audio: bytes, content_type: str) -> tuple[np.ndarray, int]:
-    """Decode audio bytes. Returns (samples[frames, channels] float32, sample_rate)."""
+def decode_audio(
+    audio: bytes, content_type: str, max_seconds: float | None = None
+) -> tuple[np.ndarray, int]:
+    """Decode audio bytes. Returns (samples[frames, channels] float32, sample_rate).
+
+    When max_seconds is given, the duration is read from the header first so a
+    small but highly compressed file cannot decode into an enormous array.
+    """
     base = _base_content_type(content_type)
     if base not in SUPPORTED_CONTENT_TYPES:
         raise UnsupportedAudioFormatError(
@@ -77,6 +83,10 @@ def decode_audio(audio: bytes, content_type: str) -> tuple[np.ndarray, int]:
     if not audio:
         raise InvalidAudioError("Audio is empty")
     try:
+        if max_seconds is not None:
+            info = sf.info(io.BytesIO(audio))
+            if info.samplerate <= 0 or info.frames > max_seconds * info.samplerate:
+                raise InvalidAudioError(f"Audio is longer than {max_seconds:g} seconds")
         samples, sample_rate = sf.read(io.BytesIO(audio), dtype="float32", always_2d=True)
     except (RuntimeError, sf.LibsndfileError) as exc:
         raise InvalidAudioError("Audio could not be decoded") from exc
@@ -158,7 +168,7 @@ class DefaultAudioPreprocessor:
 
     def preprocess(self, audio: bytes, content_type: str) -> PreprocessedAudio:
         cfg = self.config
-        raw, sr = decode_audio(audio, content_type)
+        raw, sr = decode_audio(audio, content_type, max_seconds=cfg.max_duration_seconds)
         channels = raw.shape[1]
         original_duration = raw.shape[0] / sr
         if original_duration > cfg.max_duration_seconds:

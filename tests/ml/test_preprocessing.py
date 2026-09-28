@@ -130,6 +130,21 @@ def test_pipeline_rejects_silence_and_short_and_long_audio():
         pre.preprocess(encode(tone(seconds=3.0), 16000), "audio/wav")
 
 
+def test_long_flac_rejected_from_header_before_decoding(monkeypatch):
+    import soundfile as sf
+
+    # 10 minutes of silence compresses to a small FLAC but would decode to a large array.
+    payload = encode(np.zeros(16000 * 600, dtype=np.float32), 16000, "FLAC")
+    assert len(payload) < 2_000_000
+
+    def fail_read(*args, **kwargs):
+        raise AssertionError("sf.read must not be called for over-long audio")
+
+    monkeypatch.setattr(sf, "read", fail_read)
+    with pytest.raises(InvalidAudioError, match="longer than 60"):
+        DefaultAudioPreprocessor().preprocess(payload, "audio/flac")
+
+
 def test_ml_package_does_not_import_backend():
     code = (
         "import sys, ml.audio.preprocessing, ml.audio.features, ml.models.fusion, "

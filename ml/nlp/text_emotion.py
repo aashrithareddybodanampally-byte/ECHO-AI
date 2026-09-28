@@ -35,8 +35,13 @@ _NEGATIONS = {"not", "no", "never", "isn't", "wasn't", "don't", "didn't", "doesn
               "aren't", "can't", "cannot", "won't", "nothing", "hardly"}
 
 
+def _normalize(text: str) -> str:
+    # Typographic apostrophes (default on many phone keyboards) -> ASCII.
+    return text.replace("’", "'").replace("‘", "'").replace("ʼ", "'")
+
+
 def _tokens(text: str) -> list[str]:
-    return re.findall(r"[a-z']+", text.lower())
+    return re.findall(r"[a-z']+", _normalize(text).lower())
 
 
 def _count_hits(text: str) -> dict[str, int]:
@@ -66,7 +71,7 @@ class TextEmotionAnalyzer:
         self._vader = SentimentIntensityAnalyzer()
 
     def analyze(self, text: str) -> dict:
-        compound = self._vader.polarity_scores(text)["compound"]
+        compound = self._vader.polarity_scores(_normalize(text))["compound"]
         if compound >= 0.05:
             sentiment = "positive"
         elif compound <= -0.05:

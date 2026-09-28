@@ -21,8 +21,10 @@ def test_text_analysis(text, sentiment, emotion):
     assert result["model_version"] == MODEL_VERSION
 
 
-def test_negative_phrase_starting_with_negation_is_detected():
-    assert analyzer.analyze("Honestly I don't want to live anymore.")["emotion"] == "sad"
+@pytest.mark.parametrize("apostrophe", ["'", "’"])
+def test_negative_phrase_starting_with_negation_is_detected(apostrophe):
+    text = f"Honestly I don{apostrophe}t want to live anymore."
+    assert analyzer.analyze(text)["emotion"] == "sad"
 
 
 def test_keyword_free_text_is_low_confidence_neutral():
