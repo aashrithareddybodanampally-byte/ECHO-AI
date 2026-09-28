@@ -49,6 +49,10 @@ class User(Base):
         nullable=False,
         index=True,
     )
+    hashed_password: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
