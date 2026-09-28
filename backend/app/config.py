@@ -8,7 +8,11 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     LOG_LEVEL: str = "INFO"
     DATABASE_URL: str = "postgresql+psycopg://postgres:your_password@localhost:5432/echo_ai"
-
+    
+    # Authentication settings
+    SECRET_KEY: str = "insecure-default-secret-key-do-not-use-in-production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 settings = Settings()
