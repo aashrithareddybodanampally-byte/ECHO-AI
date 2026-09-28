@@ -26,43 +26,39 @@ psychological diagnoses.
 
 ## Current Status
 
-| Phase | Scope | Status |
-|---|---|---|
-| 1 | Development environment & repository foundation | ✅ Completed |
-| 2.1 | Backend foundation | ✅ Completed |
-| 2.2 | Database foundation | ✅ Completed |
-| 2.3 | Domain models | ✅ Completed |
-| 2.4 | Authentication | ✅ Completed |
-| 2.5 | API contracts & service interfaces | 🔍 Implemented, PR open against `develop`, awaiting review |
-| 2.6 | Audio preprocessing | ⏭️ Next — spec proposed, not started |
-| 2.7 | Audio feature extraction | 🔮 Planned |
+Phases 1 and 2.1-2.4 are merged. Phase 2.5 (API contracts) has a PR open
+against `develop`. The rest of the product was implemented under the
+completion plan in [`docs/phases/README.md`](docs/phases/README.md) on
+`feature/echo-ai-completion`, after the project owner delegated technical
+decisions to the coding agent (2026-09-29).
 
-Details, branches and PRs: [`docs/phases/README.md`](docs/phases/README.md).
+### Implemented (covered by automated tests unless noted)
 
-### Implemented (and covered by the backend test suite)
+- **Backend** (`backend/`): FastAPI, settings, logging, error handling, health checks, CORS.
+- **Database**: SQLAlchemy 2.x, PostgreSQL via Alembic (SQLite for local development). Models: User (+ privacy preferences), Conversation, Message, Memory, Feedback, AnalysisResult.
+- **Authentication**: register, login, JWT (HS256), bcrypt; per-user ownership enforced on every resource.
+- **Audio ML** (`ml/audio`, `ml/training`, `ml/inference`): preprocessing, 100-dim features, RAVDESS training with SVM vs Random Forest, inference. Speaker-independent test accuracy 0.458 / macro-F1 0.453 (8 classes): [`docs/ml/VOICE-EMOTION-MODEL.md`](docs/ml/VOICE-EMOTION-MODEL.md).
+- **Speech-to-text**: faster-whisper `base`, local CPU. Verified manually with real speech; not in automated tests (model download).
+- **Text analysis** (`ml/nlp`): VADER sentiment + keyword emotion lexicon (heuristic, uncalibrated).
+- **Fusion** (`ml/models`): weighted late fusion of voice, text and previous-turn context.
+- **Conversation pipeline**: context window, user-approved memory, response policy, LLM (Claude via the Anthropic SDK; labeled offline fallback), RAG with cited sources, input/output safety, crisis protocol.
+- **RAG** (`rag/`): original knowledge base, Markdown chunking, TF-IDF retrieval.
+- **Safety** (`safety/`): rule-based input classifier (normal/distress/high-risk), output guardrail.
+- **Feedback, analytics, privacy settings**: emotion statistics are opt-in; raw audio is never stored.
+- **Frontend** (`frontend/`): React + Vite + TypeScript + Tailwind; text and voice chat, emotion display, sources, feedback, browser TTS, history, insights, memory & settings.
+- **Infrastructure**: Dockerfiles, docker-compose, GitHub Actions CI, **written but not validated**.
 
-- **Backend** (`backend/`): FastAPI app, environment-based settings, logging, global error handling, `GET /api/v1/health`.
-- **Database**: SQLAlchemy 2.x engine/session, PostgreSQL configuration via `DATABASE_URL`, Alembic migrations, `GET /api/v1/health/db`.
-- **Domain models**: `User`, `Conversation`, `Message` with ownership relationships.
-- **Authentication**: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me` (bcrypt password hashing, HS256 JWT).
-- **API contracts (Phase 2.5)**: schemas and service interfaces for emotion analysis, fusion, retrieval, chat, feedback, history and analytics. These endpoints authenticate and validate input but return **`501 Not Implemented`** — no functionality behind them exists yet. See [`docs/api/CONTRACTS.md`](docs/api/CONTRACTS.md).
-- **Audio upload limit**: 25 MB, configurable via `MAX_AUDIO_UPLOAD_BYTES`.
-
-Testing note: the backend tests use SQLite in-memory databases, mocked
-sessions and dependency overrides. Migrations and queries have **not** been
-tested against a live PostgreSQL instance in the automated suite.
+Not exercised by the automated suite: the live Claude API path, live
+PostgreSQL migrations (rendered offline only), Whisper transcription.
 
 ### Not Implemented
 
-- Audio preprocessing, feature extraction, emotion models (voice or text)
-- Speech-to-text, NLP, multimodal fusion
-- Conversation context engine, short/long-term memory
-- RAG, embeddings, vector database
-- LLM integration
-- Safety guardrails
-- Conversation history, feedback and analytics logic (contracts only)
-- Frontend application
-- Docker, CI/CD, deployment, monitoring, MLOps
+- Real-time streaming / WebSockets
+- Multilingual support
+- Grounding / hallucination verification beyond showing sources
+- Learned fusion; transformer-based text emotion
+- Drift monitoring, experiment tracking, A/B testing
+- Production deployment
 
 ---
 
@@ -70,21 +66,21 @@ tested against a live PostgreSQL instance in the automated suite.
 
 | Module | Directory | Description |
 |---|---|---|
-| **Frontend** | `frontend/` | React + Vite web application for the chat interface |
-| **Backend** | `backend/` | FastAPI REST/WebSocket API server (foundation implemented) |
-| **Database** | `backend/alembic/` | PostgreSQL schema managed with Alembic migrations |
-| **Audio ML** | `ml/audio/` | Audio preprocessing (Phase 2.6), feature extraction (Phase 2.7), speech emotion recognition |
-| **NLP** | `ml/nlp/` | Text analysis, sentiment, intent classification |
-| **Speech-to-Text** | `ml/audio/` | Transcription (provider/model not yet selected) |
-| **Multimodal Fusion** | `ml/models/` | Combining audio + text signals |
-| **Memory** | `backend/` | Conversation context & user-approved memory |
-| **RAG** | `rag/` | Document ingestion, embeddings, vector retrieval |
-| **LLM** | `backend/` | LLM API integration behind a provider-agnostic interface |
-| **Safety** | `safety/` | Input/output guardrails, high-risk handling |
-| **Analytics** | `backend/` | Usage metrics, conversation quality tracking |
-| **Testing** | `backend/tests/`, `tests/` | Unit, integration, and end-to-end tests |
-| **Infrastructure** | `infrastructure/` | Docker, CI/CD, monitoring, deployment |
-| **MLOps** | `infrastructure/` | Model versioning, experiment tracking, monitoring |
+| **Frontend** | `frontend/` | React + Vite web application (implemented) |
+| **Backend** | `backend/` | FastAPI REST API and conversation pipeline (implemented) |
+| **Database** | `backend/alembic/` | PostgreSQL schema managed with Alembic migrations (implemented) |
+| **Audio ML** | `ml/audio/`, `ml/training/`, `ml/inference/` | Preprocessing, features, voice emotion model (implemented) |
+| **NLP** | `ml/nlp/` | Text sentiment and emotion (implemented, heuristic) |
+| **Speech-to-Text** | `ml/audio/` | faster-whisper transcription (implemented) |
+| **Multimodal Fusion** | `ml/models/` | Weighted late fusion (implemented) |
+| **Memory** | `backend/` | Context window & user-approved memory (implemented) |
+| **RAG** | `rag/` | Knowledge base, chunking, TF-IDF retrieval (implemented) |
+| **LLM** | `backend/app/services/llm.py` | Claude behind `LLMService` (implemented) |
+| **Safety** | `safety/` | Input/output guardrails, crisis protocol (implemented) |
+| **Analytics** | `backend/` | Emotion distribution, feedback, per-request timings (implemented) |
+| **Testing** | `backend/tests/`, `tests/`, `frontend/src/*.test.ts` | Unit, integration and pipeline tests (implemented) |
+| **Infrastructure** | `infrastructure/`, `docker-compose.yml`, `.github/` | Docker, Compose, CI (not validated) |
+| **MLOps** | `ml/training/`, `ml/evaluation/` | Versioned artifact, metrics.json, latency benchmark (tracking/monitoring not implemented) |
 
 ---
 
@@ -129,9 +125,10 @@ tested against a live PostgreSQL instance in the automated suite.
          └────────────┘
 ```
 
-Of this diagram, only the Backend API (authentication, health) and the
-Database layer are implemented. The backend talks to every other component
-only through the service interfaces defined in Phase 2.5.
+All components in this diagram are implemented (RAG uses TF-IDF rather than
+a vector database). The backend talks to the ML, RAG, safety and LLM
+components only through the service interfaces in
+`backend/app/services/interfaces.py`.
 
 ### Data Flow (target)
 
@@ -147,13 +144,5 @@ only through the service interfaces defined in Phase 2.5.
 
 ## Currently Out of Scope
 
-The following must not be implemented until their phase is explicitly defined
-and approved:
-
-- AI/ML model training or inference (audio preprocessing is next, in Phase 2.6)
-- LLM API calls
-- RAG / vector database setup
-- Safety guardrail logic
-- Frontend application code
-- Docker containerization, CI/CD execution, production deployment
-- Real-time audio processing / streaming
+See "Not Implemented" above. Any of these needs an explicit decision before
+work starts.

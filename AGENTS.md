@@ -10,24 +10,20 @@
 
 ## Current Phase
 
-**Phase 2.5** — API Contracts & Service Interfaces (implemented; PR open against `develop`, awaiting review)
+**Phase 3: completion plan** (implemented on `feature/echo-ai-completion`, not yet merged).
 
 | Phase | Status |
 |---|---|
-| 1 — Repository foundation | ✅ Completed |
-| 2.1 — Backend foundation | ✅ Completed |
-| 2.2 — Database foundation | ✅ Completed |
-| 2.3 — Domain models | ✅ Completed |
-| 2.4 — Authentication | ✅ Completed |
-| 2.5 — API contracts & service interfaces | 🔍 In review (`feature/phase2-contracts`) |
-| 2.6 — Audio preprocessing | ⏭️ Next — spec proposed, not started |
-| 2.7 — Feature extraction | 🔮 Planned |
+| 1: Repository foundation | ✅ Merged |
+| 2.1-2.4: Backend, database, domain models, authentication | ✅ Merged |
+| 2.5: API contracts & service interfaces | ✅ Implemented, PR open against `develop` |
+| 3.1-3.8: Audio preprocessing, features, voice emotion model, STT, text emotion, fusion, conversation pipeline (memory, LLM, RAG, safety), feedback/analytics, frontend | ✅ Implemented and tested |
+| 3.9: Docker, Compose, CI | ⚠️ Written, not validated |
 
-What exists: a FastAPI backend with health checks, PostgreSQL/Alembic configuration, User/Conversation/Message models, JWT authentication, and **contract-only** AI endpoints that return `501 Not Implemented`.
-
-What does **not** exist: any AI/ML, speech, NLP, fusion, RAG, LLM, safety, memory, frontend, Docker or deployment functionality.
-
-Phase details and status: [`docs/phases/README.md`](docs/phases/README.md).
+On 2026-09-29 the project owner delegated technical decisions to the coding
+agent and asked for the project to be completed. The plan and its decisions
+are recorded in [`docs/phases/README.md`](docs/phases/README.md). The rules
+below still apply to all further work.
 
 ---
 
@@ -87,8 +83,8 @@ Phase details and status: [`docs/phases/README.md`](docs/phases/README.md).
 
 ```
 ECHO-AI/
-├── frontend/           # React + Vite frontend (not started)
-├── backend/            # Python FastAPI backend (Phases 2.1–2.5; tests in backend/tests/)
+├── frontend/           # React + Vite + TypeScript + Tailwind frontend
+├── backend/            # FastAPI backend + conversation pipeline (tests in backend/tests/)
 ├── ml/                 # Machine learning pipelines
 │   ├── audio/          # Audio/speech processing
 │   ├── nlp/            # NLP models and processing
@@ -126,6 +122,7 @@ ECHO-AI/
 | `.gitignore` | Git ignore rules |
 | `docs/` | All project documentation |
 | `docs/phases/README.md` | Implementation phase status and workflow |
-| `docs/api/CONTRACTS.md` | Versioned API & service contracts (Phase 2.5) |
+| `docs/api/CONTRACTS.md` | Versioned API & service contracts |
+| `docs/ml/VOICE-EMOTION-MODEL.md` | Voice emotion model card with measured metrics |
 | `backend/README.md` | Backend setup, endpoints and tests |
 | `scripts/check_environment.ps1` | Development environment validation |

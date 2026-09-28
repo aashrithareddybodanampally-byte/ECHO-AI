@@ -126,10 +126,13 @@
 
 ## Installation Status
 
-> **Installed**: backend dependencies in `backend/requirements.txt` (FastAPI, Uvicorn, pydantic-settings,
-> SQLAlchemy, psycopg, Alembic, PyJWT, bcrypt, passlib, email-validator, pytest, httpx).
+> **In use** (see `backend/requirements.txt`, `ml/requirements.txt`, `frontend/package.json`):
+> FastAPI, Uvicorn, pydantic-settings, SQLAlchemy, psycopg, Alembic, PyJWT, bcrypt,
+> email-validator, pytest, httpx, anthropic, NumPy, SciPy, soundfile, librosa,
+> scikit-learn, joblib, matplotlib, vaderSentiment, faster-whisper; React 19,
+> Vite 8, TypeScript 5, Tailwind CSS 4, Vitest.
 >
-> **Not installed**: all ML, RAG, LLM, frontend and infrastructure dependencies. Phase 2.6 proposes
-> `numpy`, `soundfile` and `scipy` (pending approval).
->
-> Dependencies are added incrementally as each phase begins, with justification in the PR.
+> **Planned choices that were not used**: pandas, Hugging Face Transformers,
+> PyTorch/TensorFlow, Sentence Transformers, a vector database, LangChain/LlamaIndex,
+> LiteLLM, Playwright/Cypress, Prometheus/Grafana, MLflow, Sentry. Reasons are in
+> [`docs/phases/README.md`](../phases/README.md) (Key decisions).

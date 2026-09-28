@@ -80,8 +80,10 @@ class TextEmotionAnalyzer:
             emotion = max(hits, key=lambda e: hits[e])
             confidence = min(0.95, 0.55 + 0.1 * (hits[emotion] - 1) + 0.3 * abs(compound))
         else:
+            # No emotional keywords is weak evidence: keep "neutral" at or below 0.5 so
+            # that, in fusion, a clear vocal signal is not overridden by plain wording.
             emotion = "neutral"
-            confidence = max(0.3, 1.0 - abs(compound))
+            confidence = 0.5 * (1.0 - abs(compound))
         return {
             "sentiment": sentiment,
             "emotion": emotion,

@@ -1,46 +1,59 @@
 # ECHO-AI — Implementation Phases
 
-This is the source of truth for **repository implementation phases**. Status
-reflects verified Git history; "Completed" means merged and covered by passing
-tests.
+Status reflects verified Git history and test runs. "Merged" means merged
+through a reviewed PR; "Implemented" means code and passing tests exist on the
+named branch but it has not been merged yet.
+
+## History (Phases 1 – 2.5)
 
 | Phase | Scope | Status | Branch / PR |
 |---|---|---|---|
-| 1 | Development environment & repository foundation | ✅ Completed | `965fc32` |
-| 2.1 | Backend foundation (FastAPI app, config, logging, health endpoint) | ✅ Completed | `feature/phase2-core-foundation`, PR #1 |
-| 2.2 | Database foundation (SQLAlchemy, PostgreSQL config, Alembic, DB health) | ✅ Completed | `feature/phase2-database-foundation`, PR #2 |
-| 2.3 | Domain models (User, Conversation, Message) | ✅ Completed | `feature/phase2-domain-models`, PR #3 |
-| 2.4 | Authentication (register, login, JWT, `/auth/me`) | ✅ Completed | `feature/phase2-authentication`, PR #4 |
-| 2.5 | API contracts & service interfaces | 🔍 Implemented, PR open against `develop`, awaiting review (not merged) | `feature/phase2-contracts` |
-| 2.6 | Audio preprocessing | ⏭️ Next — scope proposed, **not started** | — |
-| 2.7 | Audio feature extraction | 🔮 Planned — not defined yet | — |
-| Later | Subsequent ML/inference phases | 🔮 To be defined | — |
+| 1 | Development environment & repository foundation | ✅ Merged | `965fc32` |
+| 2.1 | Backend foundation | ✅ Merged | PR #1 |
+| 2.2 | Database foundation | ✅ Merged | PR #2 |
+| 2.3 | Domain models | ✅ Merged | PR #3 |
+| 2.4 | Authentication | ✅ Merged | PR #4 |
+| 2.5 | API contracts, service interfaces, 25 MB upload limit | ✅ Implemented, PR open against `develop` | `feature/phase2-contracts` |
 
 PRs #1–#4 were merged into `main` and then merged back into `develop`.
-From Phase 2.5 onward, phase PRs target `develop`.
 
-## Phase 2.5 — API contracts & service interfaces
+## Completion plan (Phase 3)
 
-**Implemented and tested:**
+On 2026-09-29 the project owner delegated technical decisions to the coding
+agent and asked for the project to be completed. The previous step-by-step
+plan (one approved phase at a time) was replaced by this plan, implemented on
+`feature/echo-ai-completion` (stacked on `feature/phase2-contracts`).
 
-- Request/response schemas for `POST /api/v1/emotion/analyze`, `POST /api/v1/emotion/fusion`,
-  `POST /api/v1/rag/retrieve`, `POST /api/v1/chat`, `POST /api/v1/feedback`,
-  `GET /api/v1/history`, `GET /api/v1/analytics`.
-- Internal contracts for speech-to-text, text analysis, LLM and safety.
-- Service interfaces (`backend/app/services/interfaces.py`) and route providers.
-- Every new endpoint requires authentication, validates input and returns
-  `501 Not Implemented` — **no ML, RAG, LLM, safety, history, feedback or
-  analytics functionality exists yet.**
-- Configurable 25 MB audio upload limit (`MAX_AUDIO_UPLOAD_BYTES`), enforced
-  after authentication.
+| Step | Scope | Status |
+|---|---|---|
+| 3.1 | Audio preprocessing (spec: [`PHASE-2.6-AUDIO-PREPROCESSING.md`](PHASE-2.6-AUDIO-PREPROCESSING.md), defaults as proposed) | ✅ Implemented, tested |
+| 3.2 | Audio feature extraction (MFCC, chroma, spectral centroid/bandwidth, ZCR, RMS) | ✅ Implemented, tested |
+| 3.3 | Voice emotion model: RAVDESS, speaker-independent split, SVM vs Random Forest, metrics, artifact | ✅ Trained — see [`docs/ml/VOICE-EMOTION-MODEL.md`](../ml/VOICE-EMOTION-MODEL.md) |
+| 3.4 | Speech-to-text (faster-whisper, local) and text sentiment/emotion (VADER + lexicon) | ✅ Implemented |
+| 3.5 | Multimodal fusion (weighted late fusion) | ✅ Implemented, tested |
+| 3.6 | Conversation pipeline: context window, user-approved memory, response policy, LLM (Claude + labeled offline fallback), RAG (TF-IDF + sources), input/output safety, crisis protocol | ✅ Implemented, tested |
+| 3.7 | Feedback, analytics, privacy settings (emotion statistics opt-in) | ✅ Implemented, tested |
+| 3.8 | Frontend (React + Vite + TypeScript + Tailwind): auth, text/voice chat, emotion, sources, feedback, TTS, history, insights, memory & settings | ✅ Implemented, built, exercised in a browser |
+| 3.9 | Docker, Docker Compose, GitHub Actions CI | ⚠️ Written, **not validated** (Docker is not installed on the development machine; CI has not run yet) |
 
-Full contract: [`docs/api/CONTRACTS.md`](../api/CONTRACTS.md).
+### Key decisions
 
-## Phase 2.6 — Audio preprocessing
+| Decision | Choice | Why |
+|---|---|---|
+| Audio format | WAV/FLAC only; the browser converts recordings to WAV | No ffmpeg dependency |
+| Voice dataset | RAVDESS speech (CC BY-NC-SA 4.0, non-commercial) | Standard, labeled, 24 speakers enable a speaker-independent test set |
+| Text emotion | VADER + transparent keyword lexicon | No torch/transformer download; deterministic and testable. Heuristic, not a trained model |
+| RAG | TF-IDF over an original curated knowledge base, no vector DB | Small corpus; avoids infrastructure and licensing issues |
+| LLM | Claude (`claude-opus-5-5`, low effort) behind `LLMService`; labeled offline template fallback | Works without a key; never pretends the fallback is an LLM |
+| TTS | Browser `speechSynthesis` | No server-side model or cost |
+| Safety | Rule-based classifier + output guardrail + fixed crisis protocol that bypasses the LLM | Deterministic, testable, conservative |
+| Privacy | Raw audio never stored; emotion statistics opt-in; memory only from explicit user entries | Explicit rather than accidental privacy decisions |
 
-See [`PHASE-2.6-AUDIO-PREPROCESSING.md`](PHASE-2.6-AUDIO-PREPROCESSING.md).
-Implementation must not begin until the open decisions in that document are
-approved.
+### Not implemented (deliberately out of scope)
+
+Real-time streaming/WebSockets, multilingual support, learned fusion,
+transformer-based text emotion, grounding/hallucination verification,
+drift monitoring, experiment tracking, A/B testing, production deployment.
 
 ## Workflow
 
@@ -48,7 +61,5 @@ approved.
 develop ──> feature/<phase-or-feature> ──> tests + review ──> PR into develop ──> human review ──> merge
 ```
 
-- Branch from `develop`; never develop directly on `main` or `develop`.
-- Run the full backend suite (`cd backend && pytest`) before opening a PR; all
-  previous tests must still pass.
+- Run `cd backend && pytest`, `pytest tests` (repo root) and `cd frontend && npm test && npm run build` before opening a PR.
 - Agents open PRs but do not merge them.

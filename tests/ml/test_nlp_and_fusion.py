@@ -25,6 +25,19 @@ def test_negative_phrase_starting_with_negation_is_detected():
     assert analyzer.analyze("Honestly I don't want to live anymore.")["emotion"] == "sad"
 
 
+def test_keyword_free_text_is_low_confidence_neutral():
+    result = analyzer.analyze("Dogs are sitting by the door.")
+    assert result["emotion"] == "neutral"
+    assert result["confidence"] <= 0.5
+
+
+def test_clear_voice_signal_wins_over_plain_wording():
+    text = analyzer.analyze("Dogs are sitting by the door.")
+    voice = {"probabilities": {"angry": 0.355, "happy": 0.245, "neutral": 0.0425, "disgust": 0.1025,
+                               "calm": 0.055, "fearful": 0.065, "sad": 0.06, "surprised": 0.075}}
+    assert fuse(voice=voice, text=text)["state"] == "angry"
+
+
 def test_negation_suppresses_keyword():
     assert analyzer.analyze("I am not happy").get("emotion") != "happy"
 

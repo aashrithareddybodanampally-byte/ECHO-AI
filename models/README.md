@@ -32,15 +32,20 @@ This directory stores trained ML model artifacts, checkpoints, and exported mode
 
 ## Current Models
 
-None. Model training will begin in Phase 4+ when ML pipeline development starts.
+| Model | File | Details |
+|---|---|---|
+| `emotion_model_v1` (Random Forest, 8 RAVDESS emotions) | `emotion_model_v1.pkl` (~31 MB, joblib) + `metrics.json` + `confusion_matrix.png` | [`docs/ml/VOICE-EMOTION-MODEL.md`](../docs/ml/VOICE-EMOTION-MODEL.md) |
+
+Regenerate from the repository root:
+
+```bash
+python -m ml.training.train_voice_emotion --data data/raw/ravdess --out models
+```
 
 ## Loading Models
 
-When model loading is implemented, models will be loaded via configuration:
-
-```python
-# Example (not yet implemented)
-MODEL_PATH = os.getenv("MODEL_STORAGE_PATH", "./models")
-```
-
-The model path is configurable via the `MODEL_STORAGE_PATH` environment variable (see `.env.example`).
+The backend loads the artifact from `VOICE_EMOTION_MODEL_PATH` (default
+`models/emotion_model_v1.pkl`). The artifact records its `feature_version`;
+the loader refuses an artifact built with different features. The Whisper
+speech-to-text model is downloaded by faster-whisper into its own cache and is
+not stored here.

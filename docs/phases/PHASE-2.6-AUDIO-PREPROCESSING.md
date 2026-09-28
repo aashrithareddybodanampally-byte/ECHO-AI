@@ -1,9 +1,9 @@
 # Phase 2.6 — Audio Preprocessing (Specification)
 
-> **Status: Proposed — not started.** Nothing in this document is implemented.
-> Items marked **Decision needed** must be approved by the project owner
-> before implementation begins. Proposed values are starting points, not
-> measured or validated choices.
+> **Status: Implemented** (step 3.1 of the completion plan in [`README.md`](README.md)) with the defaults proposed below; decisions D1–D6 were taken as proposed.
+> Code: `ml/audio/preprocessing.py`; tests: `tests/ml/test_preprocessing.py`.
+> Values are starting points, not tuned against real-world recordings.
+> Deviation from section 7: tests live in `tests/ml/` (not `tests/ml/audio/`).
 
 ---
 

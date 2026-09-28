@@ -28,6 +28,10 @@ class VoiceEmotionModel:
                 f"runtime provides '{FEATURE_VERSION}'"
             )
         self._model = artifact["model"]
+        # Training uses all cores; for one clip at a time a worker pool only adds overhead.
+        classifier = getattr(self._model, "named_steps", {}).get("clf")
+        if classifier is not None and hasattr(classifier, "n_jobs"):
+            classifier.n_jobs = 1
         self.labels: list[str] = [str(label) for label in artifact["labels"]]
         self.model_version: str = artifact["model_version"]
         self.preprocessor = preprocessor or DefaultAudioPreprocessor()

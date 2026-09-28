@@ -1,6 +1,6 @@
 # ECHO-AI Backend Foundation
 
-This is the FastAPI backend foundation for ECHO-AI (Phase 2.1), Database Foundation (Phase 2.2), Domain Models (Phase 2.3), Authentication (Phase 2.4), and API Contracts (Phase 2.5).
+This is the FastAPI backend for ECHO-AI: API, database, authentication, and the conversation pipeline that orchestrates the ML, RAG, LLM and safety components.
 
 ## Prerequisites
 - Python >= 3.10
@@ -19,7 +19,7 @@ source .venv/bin/activate
 ```
 
 ## Install Dependencies
-Install the required packages for the backend:
+Install the required packages for the backend (includes `ml/requirements.txt`):
 ```bash
 pip install -r requirements.txt
 ```
@@ -44,6 +44,7 @@ alembic upgrade head
 This creates:
 - The Alembic version tracking table (Phase 2.2 initial migration)
 - `users`, `conversations`, and `messages` tables (Phase 2.3 migration)
+- User preference columns and `memories`, `feedback`, `analysis_results` tables (`c3d4e5f6a7b8`)
 
 To create a new migration after adding/changing models:
 ```bash
@@ -125,18 +126,25 @@ The API will be available at `http://127.0.0.1:8000`.
 - **Get Current User**: `GET /api/v1/auth/me`
   Protected endpoint demonstrating JWT authentication and returning the current user profile.
 
-### API Contracts (Phase 2.5)
-Request/response contracts and service interfaces are defined for the planned AI endpoints. **No implementations exist yet:** each endpoint requires a Bearer token, validates its input, and returns `501 Not Implemented`.
+### Conversation & AI endpoints
+All implemented; full contract in [`docs/api/CONTRACTS.md`](../docs/api/CONTRACTS.md).
 
-- `POST /api/v1/emotion/analyze` — voice emotion (raw `audio/*` body)
-- `POST /api/v1/emotion/fusion` — multimodal fusion
-- `POST /api/v1/rag/retrieve` — retrieval with sources
-- `POST /api/v1/chat` — conversation turn
-- `POST /api/v1/feedback` — "was this helpful?" feedback
-- `GET /api/v1/history` — the current user's conversations
-- `GET /api/v1/analytics` — per-user summary
+- `POST /api/v1/chat`, `POST /api/v1/chat/voice` — text and voice conversation turns
+- `POST /api/v1/emotion/analyze`, `POST /api/v1/emotion/fusion` — voice emotion, multimodal fusion
+- `POST /api/v1/rag/retrieve` — knowledge-base retrieval with sources
+- `GET/DELETE /api/v1/history` — conversation history
+- `POST /api/v1/feedback`, `GET /api/v1/analytics`
+- `/api/v1/memory`, `/api/v1/settings` — user-approved memory and privacy settings
 
-Full contract, error behavior and open questions: [`docs/api/CONTRACTS.md`](../docs/api/CONTRACTS.md).
+The backend imports the root-level `ml/`, `rag/` and `safety/` packages
+(`app/__init__.py` adds the repository root to `sys.path`).
+
+**LLM:** set `ANTHROPIC_API_KEY` in `backend/.env` to use Claude. Without a key
+the backend uses a clearly labeled offline template responder (`offline-template-v1`).
+
+**Voice emotion model:** train it once from the repository root (see
+[`docs/ml/VOICE-EMOTION-MODEL.md`](../docs/ml/VOICE-EMOTION-MODEL.md)). Until then
+`/emotion/analyze` returns `503` and voice chat uses text-only emotion.
 
 ## Running Tests
 Run the full test suite from the `backend/` directory:
@@ -149,7 +157,11 @@ Run only the domain model unit tests (no PostgreSQL required):
 pytest tests/test_models.py -v
 ```
 
-**Note:** Domain model tests (`test_models.py`) use SQLAlchemy metadata inspection only — no live database required. Database health tests (`test_db.py`) use mocked sessions. Integration tests that exercise real PostgreSQL are deferred to future phases.
+**Note:** Tests use SQLite in-memory databases, mocked sessions and dependency
+overrides; they never call the LLM or download the Whisper model. The
+ML/RAG/safety packages have their own suite, run from the repository root:
+`pytest tests`. Migrations are not exercised against live PostgreSQL in the
+automated suite (`alembic upgrade head --sql` renders them offline).
 
 ## Project Structure
 - `app/main.py`: Application entry point.
@@ -158,8 +170,8 @@ pytest tests/test_models.py -v
 - `app/api/v1/`: API route handlers.
 - `app/schemas/`: Pydantic models for request/response validation.
 - `app/db/`: Database configuration, sessions, declarative base, and FastAPI dependencies.
-- `app/models/`: SQLAlchemy domain models (User, Conversation, Message).
-- `app/services/`: Service boundary interfaces and route providers (Phase 2.5; no implementations yet).
+- `app/models/`: SQLAlchemy domain models (User, Conversation, Message, Memory, Feedback, AnalysisResult).
+- `app/services/`: Service interfaces, providers, the chat pipeline, response policy, LLM providers and ML/RAG/safety adapters.
 - `tests/`: Automated test suite.
 - `alembic/`: Database migration scripts.
 
