@@ -44,7 +44,7 @@ plan (one approved phase at a time) was replaced by this plan, implemented on
 | Voice dataset | RAVDESS speech (CC BY-NC-SA 4.0, non-commercial) | Standard, labeled, 24 speakers enable a speaker-independent test set |
 | Text emotion | VADER + transparent keyword lexicon | No torch/transformer download; deterministic and testable. Heuristic, not a trained model |
 | RAG | TF-IDF over an original curated knowledge base, no vector DB | Small corpus; avoids infrastructure and licensing issues |
-| LLM | Groq (`llama-3.3-70b-versatile`) or Claude (`claude-opus-5-5`) behind `LLMService`; labeled offline template fallback | Groq added at the owner's request (preferred provider); works without a key; never pretends the fallback is an LLM |
+| LLM | Groq (`openai/gpt-oss-120b`) or Claude (`claude-opus-5-5`) behind `LLMService`; labeled offline template fallback | Groq added at the owner's request (preferred provider); works without a key; never pretends the fallback is an LLM |
 | TTS | Browser `speechSynthesis` | No server-side model or cost |
 | Safety | Rule-based classifier + output guardrail + fixed crisis protocol that bypasses the LLM | Deterministic, testable, conservative |
 | Privacy | Raw audio never stored; emotion statistics opt-in; memory only from explicit user entries | Explicit rather than accidental privacy decisions |

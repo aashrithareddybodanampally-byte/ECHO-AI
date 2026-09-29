@@ -147,14 +147,24 @@ class AnthropicLLMService:
 
 
 class GroqLLMService:
-    def __init__(self, api_key: str, model: str, max_tokens: int, timeout: float):
+    def __init__(
+        self, api_key: str, model: str, max_tokens: int, timeout: float, reasoning_effort: str = "low"
+    ):
         import groq
 
         self._groq = groq
         self._client = groq.Groq(api_key=api_key, timeout=timeout, max_retries=2)
         self.model = model
         self.max_tokens = max_tokens
+        self.reasoning_effort = reasoning_effort
         self._fallback = OfflineLLMService()
+
+    def _extra_params(self) -> dict:
+        # gpt-oss models reason before answering; reasoning is returned separately from
+        # message.content, and a low effort keeps chat replies fast.
+        if self.model.startswith("openai/gpt-oss") and self.reasoning_effort:
+            return {"reasoning_effort": self.reasoning_effort}
+        return {}
 
     def generate(self, request: LLMRequest) -> LLMResponse:
         groq = self._groq
@@ -162,7 +172,8 @@ class GroqLLMService:
         messages += build_messages(request.history, request.message)
         try:
             completion = self._client.chat.completions.create(
-                model=self.model, messages=messages, max_tokens=self.max_tokens
+                model=self.model, messages=messages, max_tokens=self.max_tokens,
+                **self._extra_params(),
             )
         except (groq.AuthenticationError, groq.PermissionDeniedError) as exc:
             logger.error("Groq credentials rejected: %s", exc)
@@ -206,6 +217,7 @@ def build_llm_service(settings):
             model=settings.GROQ_MODEL,
             max_tokens=settings.LLM_MAX_TOKENS,
             timeout=settings.LLM_TIMEOUT_SECONDS,
+            reasoning_effort=settings.GROQ_REASONING_EFFORT,
         )
     if provider != "anthropic":
         raise RuntimeError(f"Unknown LLM_PROVIDER '{settings.LLM_PROVIDER}'")

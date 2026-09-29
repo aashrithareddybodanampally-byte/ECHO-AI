@@ -101,7 +101,7 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
 ### LLM Integration
 - **Technology**: API-based LLM: Groq (open models) or Anthropic (Claude)
 - **Responsibility**: Response generation grounded in conversation context, ML analysis, and RAG results
-- **Status**: ✅ Implemented: Groq (`llama-3.3-70b-versatile`, Groq SDK) or Claude (`claude-opus-5-5`, Anthropic SDK), selected by `LLM_PROVIDER`, with a labeled offline template fallback.
+- **Status**: ✅ Implemented: Groq (`openai/gpt-oss-120b`, Groq SDK) or Claude (`claude-opus-5-5`, Anthropic SDK), selected by `LLM_PROVIDER`, with a labeled offline template fallback.
 
 ---
 

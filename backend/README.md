@@ -139,7 +139,7 @@ All implemented; full contract in [`docs/api/CONTRACTS.md`](../docs/api/CONTRACT
 The backend imports the root-level `ml/`, `rag/` and `safety/` packages
 (`app/__init__.py` adds the repository root to `sys.path`).
 
-**LLM:** set `GROQ_API_KEY` (default model `llama-3.3-70b-versatile`) or `ANTHROPIC_API_KEY` in `backend/.env`. `LLM_PROVIDER=auto` prefers Groq. Without a key
+**LLM:** set `GROQ_API_KEY` (default model `openai/gpt-oss-120b`) or `ANTHROPIC_API_KEY` in `backend/.env`. `LLM_PROVIDER=auto` prefers Groq. Without a key
 the backend uses a clearly labeled offline template responder (`offline-template-v1`).
 
 **Voice emotion model:** train it once from the repository root (see

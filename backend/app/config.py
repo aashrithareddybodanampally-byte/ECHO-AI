@@ -35,7 +35,8 @@ class Settings(BaseSettings):
     # is set, else the offline responder. Or force "groq" / "anthropic" / "offline".
     LLM_PROVIDER: str = "auto"
     GROQ_API_KEY: str | None = None
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
+    GROQ_REASONING_EFFORT: str = "low"  # gpt-oss models only: low | medium | high
     ANTHROPIC_API_KEY: str | None = None
     LLM_MODEL: str = "claude-opus-5-5"  # Anthropic model
     LLM_EFFORT: str = "low"  # Anthropic only

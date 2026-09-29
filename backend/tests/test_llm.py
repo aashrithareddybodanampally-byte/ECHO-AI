@@ -29,14 +29,14 @@ class FakeCompletions:
         return self.result
 
 
-def _groq_service(result=None, error=None) -> tuple[GroqLLMService, FakeCompletions]:
-    service = GroqLLMService(api_key="test-key", model="llama-3.3-70b-versatile", max_tokens=512, timeout=5)
+def _groq_service(result=None, error=None, model="openai/gpt-oss-120b") -> tuple[GroqLLMService, FakeCompletions]:
+    service = GroqLLMService(api_key="test-key", model=model, max_tokens=512, timeout=5)
     completions = FakeCompletions(result, error)
     service._client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
     return service, completions
 
 
-def _completion(text, model="llama-3.3-70b-versatile"):
+def _completion(text, model="openai/gpt-oss-120b"):
     return SimpleNamespace(model=model, choices=[SimpleNamespace(message=SimpleNamespace(content=text))])
 
 
@@ -53,10 +53,11 @@ def test_groq_sends_system_prompt_history_and_message():
     service, completions = _groq_service(_completion("Try 25-minute focus blocks. [1]"))
     response = service.generate(REQUEST)
     assert response.content == "Try 25-minute focus blocks. [1]"
-    assert response.model == "llama-3.3-70b-versatile"
+    assert response.model == "openai/gpt-oss-120b"
 
     call = completions.calls[0]
-    assert call["model"] == "llama-3.3-70b-versatile"
+    assert call["model"] == "openai/gpt-oss-120b"
+    assert call["reasoning_effort"] == "low"
     assert call["max_tokens"] == 512
     roles = [m["role"] for m in call["messages"]]
     assert roles == ["system", "user", "assistant", "user"]
@@ -92,7 +93,7 @@ def test_groq_empty_reply_falls_back_to_offline(result):
 
 def _settings(**overrides):
     base = dict(
-        LLM_PROVIDER="auto", GROQ_API_KEY=None, GROQ_MODEL="llama-3.3-70b-versatile",
+        LLM_PROVIDER="auto", GROQ_API_KEY=None, GROQ_MODEL="openai/gpt-oss-120b", GROQ_REASONING_EFFORT="low",
         ANTHROPIC_API_KEY=None, LLM_MODEL="claude-opus-5-5", LLM_EFFORT="low",
         LLM_MAX_TOKENS=512, LLM_TIMEOUT_SECONDS=5.0,
     )
@@ -119,3 +120,9 @@ def test_build_messages_starts_with_user_and_merges_same_role():
     history = [ChatTurn(role="assistant", content="Hi!"), ChatTurn(role="user", content="first")]
     messages = build_messages(history, "second")
     assert messages == [{"role": "user", "content": "first\n\nsecond"}]
+
+
+def test_reasoning_effort_only_sent_to_gpt_oss_models():
+    service, completions = _groq_service(_completion("ok", model="qwen/qwen3.8-27b"), model="qwen/qwen3.8-27b")
+    service.generate(REQUEST)
+    assert "reasoning_effort" not in completions.calls[0]

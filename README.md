@@ -18,7 +18,7 @@ You talk to ECHO-AI by text or voice. For each message it:
 7. **Builds context** from recent messages and memories the user chose to save
 8. **Retrieves** relevant knowledge-base passages and cites them
 9. **Sets a response policy** (tone, length, follow-up question, resources)
-10. **Generates** the reply with an LLM: Groq (default `llama-3.3-70b-versatile`) or Claude, or a clearly labeled offline responder when no API key is set
+10. **Generates** the reply with an LLM: Groq (default `openai/gpt-oss-120b`) or Claude, or a clearly labeled offline responder when no API key is set
 11. **Checks output safety** (no diagnoses, dosing advice or self-harm methods)
 12. Optionally **reads the reply aloud**, collects **feedback**, and (only if the user opts in) stores **emotion statistics** for an insights page
 
