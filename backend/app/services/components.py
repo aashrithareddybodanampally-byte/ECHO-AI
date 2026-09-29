@@ -117,6 +117,7 @@ class FusionAdapter:
             voice=request.voice.model_dump() if request.voice else None,
             text=request.text.model_dump() if request.text else None,
             context=request.context.model_dump() if request.context else None,
+            face=request.face.model_dump() if request.face else None,
         ))
 
 

@@ -62,6 +62,17 @@ class TextAnalysisResult(BaseModel):
     model_version: str = Field(min_length=1)
 
 
+class FaceExpressionSignal(BaseModel):
+    """
+    Facial expression estimated in the user's browser (camera opt-in).
+    Video never reaches the server; only this label and confidence do.
+    """
+
+    emotion: str = Field(min_length=1, max_length=50)
+    confidence: Probability
+    model_version: str = Field(default="face-api-expression", min_length=1, max_length=100)
+
+
 class ContextSignal(BaseModel):
     """A conversation-context signal supplied to fusion (e.g. exam-related stress)."""
 
@@ -74,12 +85,13 @@ class FusionRequest(BaseModel):
 
     voice: VoiceEmotionResult | None = None
     text: TextAnalysisResult | None = None
+    face: FaceExpressionSignal | None = None
     context: ContextSignal | None = None
 
     @model_validator(mode="after")
     def check_has_modality(self) -> "FusionRequest":
-        if self.voice is None and self.text is None:
-            raise ValueError("at least one of voice or text must be provided")
+        if self.voice is None and self.text is None and self.face is None:
+            raise ValueError("at least one of voice, text or face must be provided")
         return self
 
 
@@ -88,6 +100,7 @@ class FusionSignals(BaseModel):
 
     voice: Probability | None = None
     text: Probability | None = None
+    face: Probability | None = None
     context: Probability | None = None
 
 

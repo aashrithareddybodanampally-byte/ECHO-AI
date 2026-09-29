@@ -178,12 +178,19 @@ def test_high_risk_message_uses_crisis_protocol_without_llm(alice, llm):
     assert llm.requests == []
 
 
-def test_distress_message_gets_supportive_policy(alice, llm):
+def test_distress_gets_support_without_reflexive_referral(alice, llm):
     body = _chat(alice, "I'm so overwhelmed and I can't handle this anymore").json()
     assert body["safety_level"] == "distress"
     policy = llm.requests[-1].policy
     assert policy.tone == "supportive"
-    assert policy.include_resources is True
+    assert policy.ask_question is True
+    assert policy.include_resources is False
+
+
+def test_hopelessness_triggers_gentle_referral(alice, llm):
+    body = _chat(alice, "I feel hopeless and worthless lately").json()
+    assert body["safety_level"] == "distress"
+    assert llm.requests[-1].policy.include_resources is True
 
 
 def test_output_guardrail_replaces_unsafe_reply(alice, monkeypatch):
@@ -350,3 +357,75 @@ def test_retrieve_endpoint_uses_knowledge_base(alice):
     assert response.status_code == 200
     chunks = response.json()["chunks"]
     assert chunks and chunks[0]["source"].startswith("Sleep Basics")
+
+
+# ---------------------------------------------------------------------------
+# Counseling context: face, per-signal labels, past sessions, mood history
+# ---------------------------------------------------------------------------
+
+def test_face_expression_is_fused_and_labelled(alice, llm):
+    response = client.post(
+        "/api/v1/chat",
+        json={"message": "I'm fine, really.", "face": {"emotion": "sad", "confidence": 0.85}},
+        headers=alice,
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["emotion"]["signals"]["face"] == 0.85
+    assert body["emotion"]["state"] == "sad"
+    labels = llm.requests[-1].modality_labels
+    assert labels["face"] == "sad"
+    assert "words" in labels and "voice" not in labels
+
+
+def test_face_signal_is_validated(alice, llm):
+    response = client.post(
+        "/api/v1/chat", json={"message": "hi", "face": {"emotion": "sad", "confidence": 1.5}}, headers=alice
+    )
+    assert response.status_code == 422
+
+
+def test_past_sessions_are_shared_across_conversations(alice, bob, llm):
+    _chat(alice, "My exams start in December and I'm behind on chemistry.")
+    _chat(bob, "Bob's private worry about his job.")
+    _chat(alice, "Hi again")  # new conversation
+    past = llm.requests[-1].past_sessions
+    assert len(past) == 1
+    assert "behind on chemistry" in past[0]
+    assert all("Bob" not in s for s in past)
+
+
+def test_past_sessions_not_used_when_memory_disabled(alice, llm):
+    _chat(alice, "Something from an earlier session")
+    client.post("/api/v1/memory/disable", headers=alice)
+    _chat(alice, "New conversation")
+    assert llm.requests[-1].past_sessions == []
+
+
+def test_mood_history_only_with_saved_statistics(alice, llm):
+    _chat(alice, "I'm so happy today, this is wonderful!")
+    assert llm.requests[-1].mood_history is None
+    client.patch("/api/v1/settings", json={"save_emotion_stats": True}, headers=alice)
+    _chat(alice, "I'm so happy today, this is wonderful!")
+    _chat(alice, "Still feeling great")
+    assert "over the last 1 messages" in llm.requests[-1].mood_history
+
+
+def test_voice_chat_accepts_face_query_params(alice, llm):
+    app.dependency_overrides[providers.get_speech_to_text_service] = FakeSTT
+    app.dependency_overrides[providers.get_voice_emotion_service] = FakeVoice
+    try:
+        ok = client.post(
+            "/api/v1/chat/voice?face_emotion=angry&face_confidence=0.6",
+            content=_wav_bytes(), headers={**alice, "Content-Type": "audio/wav"},
+        )
+        partial = client.post(
+            "/api/v1/chat/voice?face_emotion=angry",
+            content=_wav_bytes(), headers={**alice, "Content-Type": "audio/wav"},
+        )
+    finally:
+        app.dependency_overrides.pop(providers.get_speech_to_text_service, None)
+        app.dependency_overrides.pop(providers.get_voice_emotion_service, None)
+    assert ok.status_code == 200
+    assert ok.json()["emotion"]["signals"]["face"] == 0.6
+    assert partial.status_code == 422

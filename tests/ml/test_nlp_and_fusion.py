@@ -51,7 +51,7 @@ def test_fusion_voice_text_context_example():
         context={"label": "sad", "score": 0.65},
     )
     assert result["state"] == "sad"
-    assert result["signals"] == {"voice": 0.72, "text": 0.81, "context": 0.65}
+    assert result["signals"] == {"voice": 0.72, "text": 0.81, "face": None, "context": 0.65}
     # 0.5*0.72 + 0.3*0.81 + 0.2*0.65
     assert result["confidence"] == pytest.approx(0.733, abs=1e-6)
 
@@ -74,3 +74,27 @@ def test_fusion_voice_can_outweigh_text():
 def test_fusion_requires_a_modality():
     with pytest.raises(ValueError):
         fuse(context={"label": "sad", "score": 0.5})
+
+
+def test_fusion_uses_face_and_normalizes_labels():
+    result = fuse(
+        text={"emotion": "neutral", "confidence": 0.3},
+        face={"emotion": "Disgusted", "confidence": 0.9},
+    )
+    assert result["state"] == "disgust"
+    assert result["signals"]["face"] == 0.9
+    assert result["signals"]["voice"] is None
+
+
+def test_face_alone_is_enough_for_fusion():
+    assert fuse(face={"emotion": "happy", "confidence": 0.8})["state"] == "happy"
+
+
+def test_face_can_reveal_mismatch_with_words():
+    # "I'm fine" in words, a clearly sad face and voice: fused state follows the stronger signals.
+    result = fuse(
+        voice={"probabilities": {"sad": 0.6, "neutral": 0.4}},
+        text={"emotion": "calm", "confidence": 0.55},
+        face={"emotion": "sad", "confidence": 0.8},
+    )
+    assert result["state"] == "sad"

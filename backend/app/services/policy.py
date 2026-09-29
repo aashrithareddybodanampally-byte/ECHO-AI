@@ -10,13 +10,20 @@ from app.schemas.safety import SafetyLevel
 NEGATIVE_STATES = {"sad", "angry", "fearful", "disgust"}
 POSITIVE_STATES = {"happy", "surprised"}
 CONFIDENT = 0.5
-VERY_CONFIDENT = 0.7
 
 _STYLE_LENGTH = {"concise": "short", "balanced": "medium", "detailed": "long"}
 
 
+# Safety reasons that warrant (once, gently) suggesting a trusted person or counselor.
+# Ordinary stress, anxiety or low mood are engaged with directly instead of referred.
+REFERRAL_REASONS = {"hopelessness"}
+
+
 def decide_policy(
-    emotion: FusionResult | None, response_style: str, safety_level: SafetyLevel
+    emotion: FusionResult | None,
+    response_style: str,
+    safety_level: SafetyLevel,
+    safety_reasons: list[str] | tuple[str, ...] = (),
 ) -> ResponsePolicy:
     state = emotion.state if emotion else None
     confidence = emotion.confidence if emotion else 0.0
@@ -32,12 +39,13 @@ def decide_policy(
     if safety_level == SafetyLevel.DISTRESS and length == "long":
         length = "medium"
 
-    include_resources = safety_level == SafetyLevel.DISTRESS or (
-        state in NEGATIVE_STATES and confidence >= VERY_CONFIDENT
+    include_resources = safety_level == SafetyLevel.DISTRESS and bool(
+        REFERRAL_REASONS.intersection(safety_reasons)
     )
     return ResponsePolicy(
         tone=tone,
         length=length,
-        ask_question=tone == "supportive",
+        # Counseling-style replies usually end with one exploratory question.
+        ask_question=tone != "neutral",
         include_resources=include_resources,
     )

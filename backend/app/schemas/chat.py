@@ -10,7 +10,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.message import MessageRole
-from app.schemas.emotion import FusionResult
+from app.schemas.emotion import FaceExpressionSignal, FusionResult
 from app.schemas.rag import RetrievedChunk, reject_blank
 from app.schemas.safety import SafetyLevel
 
@@ -44,6 +44,8 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1)
     # Omit to start a new conversation.
     conversation_id: int | None = Field(default=None, gt=0)
+    # Optional facial expression from the user's camera (computed in the browser).
+    face: FaceExpressionSignal | None = None
 
     _check_message = field_validator("message")(reject_blank)
 

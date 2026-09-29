@@ -62,7 +62,8 @@ def test_groq_sends_system_prompt_history_and_message():
     roles = [m["role"] for m in call["messages"]]
     assert roles == ["system", "user", "assistant", "user"]
     system = call["messages"][0]["content"]
-    assert "never give medication" in system.lower()
+    assert "medication or dosage advice" in system.lower()
+    assert "not a licensed therapist" in system.lower()
     assert "I prefer short answers" in system
     assert call["messages"][-1]["content"] == "How do I plan study breaks?"
 
@@ -126,3 +127,24 @@ def test_reasoning_effort_only_sent_to_gpt_oss_models():
     service, completions = _groq_service(_completion("ok", model="qwen/qwen3.8-27b"), model="qwen/qwen3.8-27b")
     service.generate(REQUEST)
     assert "reasoning_effort" not in completions.calls[0]
+
+
+def test_system_prompt_includes_counseling_context():
+    from app.schemas.emotion import FusionResult
+    from app.services.llm import build_system_prompt
+
+    request = LLMRequest(
+        message="I'm fine",
+        emotion=FusionResult(state="sad", confidence=0.6, signals={}),
+        modality_labels={"words": "neutral, calm", "voice": "sad", "face": "sad"},
+        past_sessions=['2026-09-28, "Exams": they said "I\'m behind on chemistry"'],
+        mood_history="sad x3, neutral x2 over the last 5 messages (most recent: sad)",
+        policy=ResponsePolicy(tone="supportive", ask_question=True, include_resources=False),
+    )
+    prompt = build_system_prompt(request)
+    assert "facial expression: sad" in prompt
+    assert "voice tone: sad" in prompt
+    assert "behind on chemistry" in prompt
+    assert "sad x3" in prompt
+    assert "check in" in prompt.lower()  # mismatch handling instruction
+    assert "suggest talking to someone they trust or a counselor" not in prompt

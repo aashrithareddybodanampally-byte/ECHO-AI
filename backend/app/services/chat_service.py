@@ -67,6 +67,55 @@ def build_context(messages: list[Message], max_messages: int, max_chars: int) ->
     return list(reversed(selected))
 
 
+PAST_SESSIONS = 3
+PAST_SESSION_MESSAGES = 2
+MOOD_HISTORY_TURNS = 12
+
+
+def summarize_past_sessions(db: Session, user: User, exclude_id: int) -> list[str]:
+    """Short summaries of the user's most recent other conversations (their own words only)."""
+    conversations = (
+        db.query(Conversation)
+        .filter(Conversation.user_id == user.id, Conversation.id != exclude_id)
+        .order_by(Conversation.updated_at.desc(), Conversation.id.desc())
+        .limit(PAST_SESSIONS)
+        .all()
+    )
+    summaries = []
+    for conversation in conversations:
+        said = (
+            db.query(Message.content)
+            .filter(Message.conversation_id == conversation.id, Message.role == MessageRole.USER.value)
+            .order_by(Message.created_at.desc(), Message.id.desc())
+            .limit(PAST_SESSION_MESSAGES)
+            .all()
+        )
+        if not said:
+            continue
+        quotes = "; ".join(f'"{content[:160]}"' for (content,) in reversed(said))
+        when = conversation.updated_at.strftime("%Y-%m-%d") if conversation.updated_at else "earlier"
+        summaries.append(f"{when}, \"{conversation.title or 'Untitled'}\": they said {quotes}")
+    return summaries
+
+
+def summarize_mood_history(db: Session, user: User) -> str | None:
+    """Counts of recent fused mood estimates, only available when the user saves them."""
+    states = [
+        state for (state,) in db.query(AnalysisResult.fused_state)
+        .filter(AnalysisResult.user_id == user.id)
+        .order_by(AnalysisResult.id.desc())
+        .limit(MOOD_HISTORY_TURNS)
+        .all()
+    ]
+    if not states:
+        return None
+    counts: dict[str, int] = {}
+    for state in states:
+        counts[state] = counts.get(state, 0) + 1
+    ordered = ", ".join(f"{k} x{v}" for k, v in sorted(counts.items(), key=lambda kv: -kv[1]))
+    return f"{ordered} over the last {len(states)} messages (most recent: {states[0]})"
+
+
 class ChatPipeline:
     def __init__(self, db: Session):
         self.db = db
@@ -132,7 +181,16 @@ class ChatPipeline:
             if last_analysis
             else None
         )
-        emotion = components.fusion().fuse(FusionRequest(voice=voice, text=text, context=context))
+        emotion = components.fusion().fuse(
+            FusionRequest(voice=voice, text=text, face=request.face, context=context)
+        )
+        modality_labels = {"words": f"{text.sentiment}, {text.emotion}"}
+        if voice:
+            modality_labels["voice"] = voice.emotion
+        if request.face:
+            from ml.models.fusion import normalize_label
+
+            modality_labels["face"] = normalize_label(request.face.emotion)
         t = mark("fusion_ms", t)
 
         sources = []
@@ -141,20 +199,23 @@ class ChatPipeline:
 
             reply_text, model = CRISIS_RESPONSE, SAFETY_PROTOCOL_MODEL
         else:
-            memories = []
+            memories, past_sessions = [], []
             if user.memory_enabled:
                 memories = [
                     m.content for m in db.query(Memory)
                     .filter(Memory.user_id == user.id).order_by(Memory.id).all()
                 ]
+                past_sessions = summarize_past_sessions(db, user, conversation.id)
+            mood_history = summarize_mood_history(db, user) if user.save_emotion_stats else None
             sources = components.retrieval().retrieve(request.message, settings.RAG_TOP_K)
             t = mark("retrieval_ms", t)
 
-            policy = decide_policy(emotion, user.response_style, safety_in.level)
+            policy = decide_policy(emotion, user.response_style, safety_in.level, safety_in.reasons)
             generated = components.llm().generate(LLMRequest(
                 message=request.message, history=history, emotion=emotion,
                 retrieved=sources, safety_level=safety_in.level,
-                policy=policy, memories=memories,
+                policy=policy, memories=memories, modality_labels=modality_labels,
+                past_sessions=past_sessions, mood_history=mood_history,
             ))
             t = mark("llm_ms", t)
             reply_text, model = generated.content, generated.model

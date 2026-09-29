@@ -214,7 +214,7 @@ def test_fusion_returns_result(authed):
     assert response.status_code == 200
     body = response.json()
     assert body["state"] == "stressed"
-    assert body["signals"] == {"voice": None, "text": 0.81, "context": None}
+    assert body["signals"] == {"voice": None, "text": 0.81, "face": None, "context": None}
 
 
 def test_fusion_requires_a_modality(authed):

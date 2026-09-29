@@ -38,6 +38,12 @@ class LLMRequest(BaseModel):
     policy: ResponsePolicy = Field(default_factory=ResponsePolicy)
     # User-approved long-term memories (empty when memory is disabled).
     memories: list[str] = Field(default_factory=list)
+    # Per-modality mood labels for this turn, e.g. {"voice": "sad", "words": "neutral", "face": "sad"}.
+    modality_labels: dict[str, str] = Field(default_factory=dict)
+    # Short summaries of the user's previous conversations (empty when memory is disabled).
+    past_sessions: list[str] = Field(default_factory=list)
+    # Summary of recent fused mood estimates (only when the user saves emotion statistics).
+    mood_history: str | None = None
 
 
 class LLMResponse(BaseModel):
