@@ -18,7 +18,7 @@ You talk to ECHO-AI by text or voice. For each message it:
 7. **Builds context** from recent messages and memories the user chose to save
 8. **Retrieves** relevant knowledge-base passages and cites them
 9. **Sets a response policy** (tone, length, follow-up question, resources)
-10. **Generates** the reply with Claude (or a clearly labeled offline responder when no API key is set)
+10. **Generates** the reply with an LLM: Groq (default `llama-3.3-70b-versatile`) or Claude, or a clearly labeled offline responder when no API key is set
 11. **Checks output safety** (no diagnoses, dosing advice or self-harm methods)
 12. Optionally **reads the reply aloud**, collects **feedback**, and (only if the user opts in) stores **emotion statistics** for an insights page
 
@@ -59,7 +59,7 @@ Frontend (React + Vite)  ──REST──>  Backend (FastAPI)
  voice emotion
                                        │
                                        ▼
-                         LLM (Claude) · PostgreSQL
+                  LLM (Groq or Claude) · SQLite/PostgreSQL
 ```
 
 `ml/`, `rag/` and `safety/` never import the backend; the backend uses them
@@ -90,7 +90,7 @@ npm install
 npm run dev                       # http://localhost:5173
 ```
 
-Optional: set `ANTHROPIC_API_KEY` in `backend/.env` to use Claude for replies.
+Optional: set `GROQ_API_KEY` (or `ANTHROPIC_API_KEY`) in `backend/.env` for LLM replies. With `LLM_PROVIDER=auto`, Groq is used first when its key is set.
 
 With Docker (not validated yet): `cp .env.docker.example .env`, set values, `docker compose up --build`.
 

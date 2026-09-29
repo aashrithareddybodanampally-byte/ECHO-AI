@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -30,11 +31,14 @@ class Settings(BaseSettings):
     STT_ENABLED: bool = True
     WHISPER_MODEL_SIZE: str = "base"
 
-    # LLM: "auto" uses Anthropic when ANTHROPIC_API_KEY is set, otherwise the offline responder.
+    # LLM: "auto" picks Groq if GROQ_API_KEY is set, else Anthropic if ANTHROPIC_API_KEY
+    # is set, else the offline responder. Or force "groq" / "anthropic" / "offline".
     LLM_PROVIDER: str = "auto"
+    GROQ_API_KEY: str | None = None
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
     ANTHROPIC_API_KEY: str | None = None
-    LLM_MODEL: str = "claude-opus-5-5"
-    LLM_EFFORT: str = "low"
+    LLM_MODEL: str = "claude-opus-5-5"  # Anthropic model
+    LLM_EFFORT: str = "low"  # Anthropic only
     LLM_MAX_TOKENS: int = 2048
     LLM_TIMEOUT_SECONDS: float = 60.0
 
@@ -44,6 +48,14 @@ class Settings(BaseSettings):
     RAG_TOP_K: int = 3
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def secret_key_not_blank(cls, value: str) -> str:
+        # An empty "SECRET_KEY=" line in .env would otherwise sign tokens with an empty key.
+        if not value.strip():
+            raise ValueError("SECRET_KEY must not be empty; set it in backend/.env")
+        return value
 
 settings = Settings()
 

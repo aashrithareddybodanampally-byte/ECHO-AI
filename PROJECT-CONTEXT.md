@@ -41,14 +41,14 @@ decisions to the coding agent (2026-09-29).
 - **Speech-to-text**: faster-whisper `base`, local CPU. Verified manually with real speech; not in automated tests (model download).
 - **Text analysis** (`ml/nlp`): VADER sentiment + keyword emotion lexicon (heuristic, uncalibrated).
 - **Fusion** (`ml/models`): weighted late fusion of voice, text and previous-turn context.
-- **Conversation pipeline**: context window, user-approved memory, response policy, LLM (Claude via the Anthropic SDK; labeled offline fallback), RAG with cited sources, input/output safety, crisis protocol.
+- **Conversation pipeline**: context window, user-approved memory, response policy, LLM (Groq or Claude behind `LLMService`; labeled offline fallback), RAG with cited sources, input/output safety, crisis protocol.
 - **RAG** (`rag/`): original knowledge base, Markdown chunking, TF-IDF retrieval.
 - **Safety** (`safety/`): rule-based input classifier (normal/distress/high-risk), output guardrail.
 - **Feedback, analytics, privacy settings**: emotion statistics are opt-in; raw audio is never stored.
 - **Frontend** (`frontend/`): React + Vite + TypeScript + Tailwind; text and voice chat, emotion display, sources, feedback, browser TTS, history, insights, memory & settings.
 - **Infrastructure**: Dockerfiles, docker-compose, GitHub Actions CI, **written but not validated**.
 
-Not exercised by the automated suite: the live Claude API path, live
+Not exercised by the automated suite: live LLM provider calls (Groq/Claude; tested with fake clients), live
 PostgreSQL migrations (rendered offline only), Whisper transcription.
 
 ### Not Implemented
@@ -75,7 +75,7 @@ PostgreSQL migrations (rendered offline only), Whisper transcription.
 | **Multimodal Fusion** | `ml/models/` | Weighted late fusion (implemented) |
 | **Memory** | `backend/` | Context window & user-approved memory (implemented) |
 | **RAG** | `rag/` | Knowledge base, chunking, TF-IDF retrieval (implemented) |
-| **LLM** | `backend/app/services/llm.py` | Claude behind `LLMService` (implemented) |
+| **LLM** | `backend/app/services/llm.py` | Groq or Claude behind `LLMService` (implemented) |
 | **Safety** | `safety/` | Input/output guardrails, crisis protocol (implemented) |
 | **Analytics** | `backend/` | Emotion distribution, feedback, per-request timings (implemented) |
 | **Testing** | `backend/tests/`, `tests/`, `frontend/src/*.test.ts` | Unit, integration and pipeline tests (implemented) |

@@ -86,13 +86,13 @@ Response `200`:
   "emotion": {"state": "fearful", "confidence": 0.65, "signals": {"voice": null, "text": 0.65, "context": null}},
   "safety_level": "normal",
   "transcript": null,
-  "llm_model": "claude-opus-5-5",
+  "llm_model": "llama-3.3-70b-versatile",
   "timings_ms": {"context_ms": 3.1, "text_analysis_ms": 1.2, "fusion_ms": 0.4, "retrieval_ms": 1.0,
                  "llm_ms": 2100.5, "output_safety_ms": 0.2, "total_ms": 2107.9}
 }
 ```
 - `safety_level`: `normal` | `distress` | `high_risk`. On `high_risk` the LLM is **not** called; the reply is the fixed crisis protocol and `llm_model` is `"safety-protocol"`.
-- `llm_model`: the Claude model that answered, `"offline-template-v1"` when no API key is configured or the provider failed, or `"safety-protocol"`.
+- `llm_model`: the model that answered (e.g. `llama-3.3-70b-versatile` on Groq or `claude-opus-5-5`), `"offline-template-v1"` when no API key is configured or the provider failed, or `"safety-protocol"`.
 - `timings_ms`: measured per request (no targets are claimed).
 
 ### `POST /chat/voice?conversation_id=12` — voice turn
@@ -135,7 +135,7 @@ only ever created by the user; nothing is extracted automatically.
 | `FusionService` | `components.FusionAdapter` → `ml/models/fusion.py` |
 | `RetrievalService` | `components.RetrievalAdapter` → `rag/retrieval/retriever.py` |
 | `SafetyService` | `components.SafetyAdapter` → `safety/guardrails.py` |
-| `LLMService` | `llm.AnthropicLLMService` / `llm.OfflineLLMService` |
+| `LLMService` | `llm.GroqLLMService` / `llm.AnthropicLLMService` / `llm.OfflineLLMService` (chosen by `LLM_PROVIDER`) |
 | `ChatService` | `chat_service.ChatPipeline` |
 | `HistoryService`, `FeedbackService`, `AnalyticsService` | `chat_service.Database*Service` |
 

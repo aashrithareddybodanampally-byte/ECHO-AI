@@ -1,6 +1,7 @@
 """
 LLM providers behind the LLMService interface.
 
+- GroqLLMService:      open models (default Llama 3.3 70B) via the Groq SDK.
 - AnthropicLLMService: Claude via the official Anthropic SDK.
 - OfflineLLMService:   deterministic template responder used when no API key
                        is configured or the provider fails. Clearly labeled via
@@ -145,10 +146,69 @@ class AnthropicLLMService:
         return LLMResponse(content=text, model=response.model)
 
 
+class GroqLLMService:
+    def __init__(self, api_key: str, model: str, max_tokens: int, timeout: float):
+        import groq
+
+        self._groq = groq
+        self._client = groq.Groq(api_key=api_key, timeout=timeout, max_retries=2)
+        self.model = model
+        self.max_tokens = max_tokens
+        self._fallback = OfflineLLMService()
+
+    def generate(self, request: LLMRequest) -> LLMResponse:
+        groq = self._groq
+        messages = [{"role": "system", "content": build_system_prompt(request)}]
+        messages += build_messages(request.history, request.message)
+        try:
+            completion = self._client.chat.completions.create(
+                model=self.model, messages=messages, max_tokens=self.max_tokens
+            )
+        except (groq.AuthenticationError, groq.PermissionDeniedError) as exc:
+            logger.error("Groq credentials rejected: %s", exc)
+            return self._fallback.generate(request)
+        except groq.RateLimitError as exc:
+            logger.warning("Groq rate limited: %s", exc)
+            return self._fallback.generate(request)
+        except groq.APIStatusError as exc:
+            logger.error("Groq API error %s: %s", exc.status_code, exc)
+            return self._fallback.generate(request)
+        except groq.APIConnectionError as exc:
+            logger.error("Groq connection error: %s", exc)
+            return self._fallback.generate(request)
+
+        text = (completion.choices[0].message.content or "").strip() if completion.choices else ""
+        if not text:
+            return self._fallback.generate(request)
+        return LLMResponse(content=text, model=completion.model or self.model)
+
+
 def build_llm_service(settings):
+    """
+    LLM_PROVIDER: "auto" (Groq if GROQ_API_KEY is set, else Anthropic if
+    ANTHROPIC_API_KEY is set, else offline), "groq", "anthropic" or "offline".
+    """
     provider = settings.LLM_PROVIDER.lower()
-    if provider == "offline" or (provider == "auto" and not settings.ANTHROPIC_API_KEY):
+    if provider == "auto":
+        if settings.GROQ_API_KEY:
+            provider = "groq"
+        elif settings.ANTHROPIC_API_KEY:
+            provider = "anthropic"
+        else:
+            provider = "offline"
+    if provider == "offline":
         return OfflineLLMService()
+    if provider == "groq":
+        if not settings.GROQ_API_KEY:
+            raise RuntimeError("LLM_PROVIDER=groq requires GROQ_API_KEY")
+        return GroqLLMService(
+            api_key=settings.GROQ_API_KEY,
+            model=settings.GROQ_MODEL,
+            max_tokens=settings.LLM_MAX_TOKENS,
+            timeout=settings.LLM_TIMEOUT_SECONDS,
+        )
+    if provider != "anthropic":
+        raise RuntimeError(f"Unknown LLM_PROVIDER '{settings.LLM_PROVIDER}'")
     if not settings.ANTHROPIC_API_KEY:
         raise RuntimeError("LLM_PROVIDER=anthropic requires ANTHROPIC_API_KEY")
     return AnthropicLLMService(

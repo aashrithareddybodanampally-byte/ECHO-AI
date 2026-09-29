@@ -31,7 +31,7 @@ plan (one approved phase at a time) was replaced by this plan, implemented on
 | 3.3 | Voice emotion model: RAVDESS, speaker-independent split, SVM vs Random Forest, metrics, artifact | ✅ Trained — see [`docs/ml/VOICE-EMOTION-MODEL.md`](../ml/VOICE-EMOTION-MODEL.md) |
 | 3.4 | Speech-to-text (faster-whisper, local) and text sentiment/emotion (VADER + lexicon) | ✅ Implemented |
 | 3.5 | Multimodal fusion (weighted late fusion) | ✅ Implemented, tested |
-| 3.6 | Conversation pipeline: context window, user-approved memory, response policy, LLM (Claude + labeled offline fallback), RAG (TF-IDF + sources), input/output safety, crisis protocol | ✅ Implemented, tested |
+| 3.6 | Conversation pipeline: context window, user-approved memory, response policy, LLM (Groq or Claude + labeled offline fallback), RAG (TF-IDF + sources), input/output safety, crisis protocol | ✅ Implemented, tested |
 | 3.7 | Feedback, analytics, privacy settings (emotion statistics opt-in) | ✅ Implemented, tested |
 | 3.8 | Frontend (React + Vite + TypeScript + Tailwind): auth, text/voice chat, emotion, sources, feedback, TTS, history, insights, memory & settings | ✅ Implemented, built, exercised in a browser |
 | 3.9 | Docker, Docker Compose, GitHub Actions CI | ⚠️ Written, **not validated** (Docker is not installed on the development machine; CI has not run yet) |
@@ -44,7 +44,7 @@ plan (one approved phase at a time) was replaced by this plan, implemented on
 | Voice dataset | RAVDESS speech (CC BY-NC-SA 4.0, non-commercial) | Standard, labeled, 24 speakers enable a speaker-independent test set |
 | Text emotion | VADER + transparent keyword lexicon | No torch/transformer download; deterministic and testable. Heuristic, not a trained model |
 | RAG | TF-IDF over an original curated knowledge base, no vector DB | Small corpus; avoids infrastructure and licensing issues |
-| LLM | Claude (`claude-opus-5-5`, low effort) behind `LLMService`; labeled offline template fallback | Works without a key; never pretends the fallback is an LLM |
+| LLM | Groq (`llama-3.3-70b-versatile`) or Claude (`claude-opus-5-5`) behind `LLMService`; labeled offline template fallback | Groq added at the owner's request (preferred provider); works without a key; never pretends the fallback is an LLM |
 | TTS | Browser `speechSynthesis` | No server-side model or cost |
 | Safety | Rule-based classifier + output guardrail + fixed crisis protocol that bypasses the LLM | Deterministic, testable, conservative |
 | Privacy | Raw audio never stored; emotion statistics opt-in; memory only from explicit user entries | Explicit rather than accidental privacy decisions |

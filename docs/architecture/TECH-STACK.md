@@ -83,7 +83,7 @@
 
 | Technology | Purpose |
 |---|---|
-| OpenAI API / Anthropic API | Response generation |
+| Groq API / Anthropic API | Response generation (Groq preferred when configured) |
 | LiteLLM (potential) | Multi-provider abstraction |
 
 **Rationale**: API-based LLMs avoid the infrastructure cost of self-hosting. LiteLLM would allow provider-agnostic integration.
@@ -128,7 +128,7 @@
 
 > **In use** (see `backend/requirements.txt`, `ml/requirements.txt`, `frontend/package.json`):
 > FastAPI, Uvicorn, pydantic-settings, SQLAlchemy, psycopg, Alembic, PyJWT, bcrypt,
-> email-validator, pytest, httpx, anthropic, NumPy, SciPy, soundfile, librosa,
+> email-validator, pytest, httpx, groq, anthropic, NumPy, SciPy, soundfile, librosa,
 > scikit-learn, joblib, matplotlib, vaderSentiment, faster-whisper; React 19,
 > Vite 8, TypeScript 5, Tailwind CSS 4, Vitest.
 >
