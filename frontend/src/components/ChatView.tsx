@@ -159,7 +159,7 @@ export function ChatView({ conversationId, initialMessages, autoSpeak, onConvers
                   {item.transcript && <span className="mr-1 opacity-70">🎙</span>}
                   {item.content}
                 </div>
-                {item.emotion && <EmotionBadge emotion={item.emotion} />}
+                {item.emotion && item.emotion.confidence >= 0.3 && <EmotionBadge emotion={item.emotion} />}
               </div>
             ) : (
               <div key={item.id} className="flex flex-col items-start gap-2">

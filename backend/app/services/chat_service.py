@@ -31,7 +31,7 @@ from app.schemas.llm import ChatTurn, LLMRequest
 from app.schemas.safety import SafetyLevel
 from app.services import components
 from app.services.interfaces import InvalidInputError, ResourceNotFoundError
-from app.services.policy import decide_policy
+from app.services.policy import asks_for_help, decide_policy, decide_stage
 
 logger = logging.getLogger(__name__)
 
@@ -207,10 +207,18 @@ class ChatPipeline:
                 ]
                 past_sessions = summarize_past_sessions(db, user, conversation.id)
             mood_history = summarize_mood_history(db, user) if user.save_emotion_stats else None
-            sources = components.retrieval().retrieve(request.message, settings.RAG_TOP_K)
-            t = mark("retrieval_ms", t)
+            user_turns = sum(1 for turn in history if turn.role == MessageRole.USER) + 1
+            wants_help = asks_for_help(request.message)
+            # Knowledge-base tips only when the person asks for help; earlier they pull the
+            # reply toward advice before the person feels heard.
+            if decide_stage(user_turns, wants_help) == "support":
+                sources = components.retrieval().retrieve(request.message, settings.RAG_TOP_K)
+                t = mark("retrieval_ms", t)
 
-            policy = decide_policy(emotion, user.response_style, safety_in.level, safety_in.reasons)
+            policy = decide_policy(
+                emotion, user.response_style, safety_in.level, safety_in.reasons,
+                user_turns=user_turns, wants_help=wants_help,
+            )
             generated = components.llm().generate(LLMRequest(
                 message=request.message, history=history, emotion=emotion,
                 retrieved=sources, safety_level=safety_in.level,

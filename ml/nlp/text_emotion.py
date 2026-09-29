@@ -21,7 +21,11 @@ EMOTION_KEYWORDS: dict[str, tuple[str, ...]] = {
               "proud", "grateful", "relieved", "delighted", "fantastic", "good news"),
     "sad": ("sad", "down", "unhappy", "depressed", "lonely", "cry", "crying", "hopeless",
             "miserable", "heartbroken", "empty", "tired", "exhausted", "lost",
-            "want to die", "don't want to live", "no reason to live", "worthless"),
+            "want to die", "don't want to live", "no reason to live", "worthless",
+            # loneliness, exclusion and rejection
+            "alone", "left out", "excluded", "exclude", "ignored", "ignore me", "rejected",
+            "no one cares", "nobody cares", "no one listens", "nobody listens", "invisible",
+            "unwanted", "unloved", "don't belong", "abandoned", "isolated", "hurt", "disappointed"),
     "angry": ("angry", "mad", "furious", "annoyed", "frustrated", "frustrating", "irritated",
               "hate", "rage", "fed up", "pissed"),
     "fearful": ("scared", "afraid", "anxious", "worried", "nervous", "panic", "stress",
@@ -84,6 +88,11 @@ class TextEmotionAnalyzer:
             # Ties are broken by lexicon order (dict order above).
             emotion = max(hits, key=lambda e: hits[e])
             confidence = min(0.95, 0.55 + 0.1 * (hits[emotion] - 1) + 0.3 * abs(compound))
+        elif compound <= -0.3:
+            # Clearly negative wording without a lexicon keyword: low mood is the most
+            # common case; keep confidence modest because the emotion itself is a guess.
+            emotion = "sad"
+            confidence = 0.35 + 0.3 * abs(compound)
         else:
             # No emotional keywords is weak evidence: keep "neutral" at or below 0.5 so
             # that, in fusion, a clear vocal signal is not overridden by plain wording.

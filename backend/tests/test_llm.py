@@ -146,5 +146,5 @@ def test_system_prompt_includes_counseling_context():
     assert "voice tone: sad" in prompt
     assert "behind on chemistry" in prompt
     assert "sad x3" in prompt
-    assert "check in" in prompt.lower()  # mismatch handling instruction
+    assert "gently wonder about it" in prompt  # words vs signals mismatch instruction
     assert "suggest talking to someone they trust or a counselor" not in prompt

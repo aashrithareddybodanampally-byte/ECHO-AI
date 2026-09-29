@@ -23,9 +23,13 @@ class ResponsePolicy(BaseModel):
     """Deterministic style decisions made before generation."""
 
     tone: Literal["neutral", "warm", "supportive"] = "neutral"
-    length: Literal["short", "medium", "long"] = "medium"
+    length: Literal["brief", "short", "medium", "long"] = "short"
     ask_question: bool = False
     include_resources: bool = False
+    # Counseling stage: "explore" (listen, reflect, small questions; no advice),
+    # "deepen" (summarize, notice patterns, gently question absolutes),
+    # "support" (they asked for help: offer one small, concrete idea).
+    stage: Literal["explore", "deepen", "support"] = "explore"
 
 
 class LLMRequest(BaseModel):

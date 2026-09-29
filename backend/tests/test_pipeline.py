@@ -272,7 +272,7 @@ def test_memory_lifecycle(alice, bob, llm):
 def test_response_style_setting_drives_policy(alice, llm):
     assert client.patch("/api/v1/settings", json={"response_style": "concise"}, headers=alice).status_code == 200
     _chat(alice, "Tell me about sleep")
-    assert llm.requests[-1].policy.length == "short"
+    assert llm.requests[-1].policy.length == "brief"
 
 
 def test_settings_reject_unknown_style(alice):
@@ -429,3 +429,23 @@ def test_voice_chat_accepts_face_query_params(alice, llm):
     assert ok.status_code == 200
     assert ok.json()["emotion"]["signals"]["face"] == 0.6
     assert partial.status_code == 422
+
+
+
+def test_first_disclosure_is_explored_without_advice_or_tips(alice, llm):
+    body = _chat(alice, "no one cares what i need or talk about, always im the one excluded from the group").json()
+    request = llm.requests[-1]
+    assert request.policy.stage == "explore"
+    assert request.retrieved == []  # no knowledge-base tips before they feel heard
+    assert body["sources"] == []
+    assert body["emotion"]["state"] == "sad"
+
+
+def test_stage_moves_to_deepen_then_support_on_request(alice, llm):
+    first = _chat(alice, "no one cares what i need").json()
+    cid = first["conversation_id"]
+    _chat(alice, "they planned a trip without me", cid)
+    _chat(alice, "it keeps happening", cid)
+    assert llm.requests[-1].policy.stage == "deepen"
+    _chat(alice, "what should I do about it?", cid)
+    assert llm.requests[-1].policy.stage == "support"

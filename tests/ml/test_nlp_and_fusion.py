@@ -98,3 +98,18 @@ def test_face_can_reveal_mismatch_with_words():
         face={"emotion": "sad", "confidence": 0.8},
     )
     assert result["state"] == "sad"
+
+
+@pytest.mark.parametrize("text", [
+    "no one cares what i need or talk about, always im the one excluded from the group",
+    "I always get left out",
+    "nobody listens to me",
+])
+def test_exclusion_and_loneliness_read_as_sad(text):
+    assert analyzer.analyze(text)["emotion"] == "sad"
+
+
+def test_clearly_negative_text_without_keywords_is_not_neutral():
+    result = analyzer.analyze("this whole week has been awful and pointless")
+    assert result["emotion"] == "sad"
+    assert result["confidence"] < 0.7
