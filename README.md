@@ -37,7 +37,7 @@ medical service and cannot provide crisis care.
 | Speech-to-text, text emotion, fusion | ✅ Implemented |
 | Context, memory, response policy, LLM, RAG, safety | ✅ Implemented and tested |
 | Feedback, analytics, privacy settings | ✅ Implemented and tested |
-| Frontend | ✅ Implemented, built, exercised in a browser |
+| Frontend (landing page, sign-in/up, chat, insights, settings; single dark theme) | ✅ Implemented, built, exercised in a browser |
 | Docker / Compose / CI | ⚠️ Written, not validated |
 
 Phases and decisions: [`docs/phases/README.md`](docs/phases/README.md).

@@ -1,9 +1,58 @@
 @import "tailwindcss";
 
+/* The app uses a single dark theme; `dark:` utilities apply when <html class="dark">. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-ink-950: #07080f;
+  --color-ink-900: #0d0f1a;
+  --color-ink-800: #161a2b;
+}
+
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-ink-950 text-slate-100 antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Indigo-to-cyan gradient text used for headings and accents. */
+.text-gradient {
+  background-image: linear-gradient(100deg, #c7d2fe 0%, #818cf8 45%, #67e8f9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft blurred light behind sections. */
+.glow {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.45;
+}
+
+/* Card with a faint gradient border. */
+.card-outline {
+  position: relative;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgb(22 26 43 / 0.9), rgb(13 15 26 / 0.9)) padding-box,
+    linear-gradient(180deg, rgb(129 140 248 / 0.45), rgb(129 140 248 / 0.05)) border-box;
+  border: 1px solid transparent;
+}
+
+/* Animated sound-wave bars for the hero. */
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.wave-bar {
+  transform-origin: center;
+  animation: wave 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave-bar { animation: none; transform: scaleY(0.6); }
 }

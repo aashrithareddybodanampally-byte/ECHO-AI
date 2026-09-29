@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, getToken, setToken, setUnauthorizedHandler } from "./api";
 import { AuthPage } from "./components/AuthPage";
+import { Landing } from "./components/landing/Landing";
+import { Logo } from "./components/Logo";
+import { navigate, useRoute } from "./route";
 import { ChatView } from "./components/ChatView";
 import { InsightsView } from "./components/InsightsView";
 import { SettingsView } from "./components/SettingsView";
@@ -19,6 +22,7 @@ function readAutoSpeak(): boolean {
 
 export default function App() {
   const [authed, setAuthed] = useState(() => Boolean(getToken()));
+  const route = useRoute();
   const [email, setEmail] = useState<string | null>(null);
   const [view, setView] = useState<View>("chat");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -37,6 +41,7 @@ export default function App() {
     // Never let the next account on this browser see the previous one's messages.
     setInitialMessages([]);
     setChatKey((k) => k + 1);
+    navigate("home");
   }, []);
 
   useEffect(() => {
@@ -55,7 +60,10 @@ export default function App() {
     refreshHistory().catch(() => {});
   }, [authed, refreshHistory]);
 
-  if (!authed) return <AuthPage onAuthenticated={() => setAuthed(true)} />;
+  if (!authed) {
+    if (route === "home") return <Landing />;
+    return <AuthPage key={route} mode={route} onAuthenticated={() => setAuthed(true)} />;
+  }
 
   function openConversation(id: number | null) {
     // Messages are loaded only when a conversation is explicitly opened; the
@@ -86,7 +94,7 @@ export default function App() {
   const nav = (id: View, label: string) => (
     <button
       onClick={() => { setView(id); setMenuOpen(false); }}
-      className={`w-full rounded-lg px-3 py-2 text-left text-sm ${view === id ? "bg-slate-200 dark:bg-slate-800" : "hover:bg-slate-100 dark:hover:bg-slate-900"}`}
+      className={`w-full rounded-lg px-3 py-2 text-left text-sm ${view === id ? "bg-white/10 text-white" : "text-slate-300 hover:bg-white/5 hover:text-white"}`}
     >
       {label}
     </button>
@@ -95,15 +103,15 @@ export default function App() {
   return (
     <div className="flex h-screen">
       <aside
-        className={`${menuOpen ? "fixed inset-0 z-20 flex" : "hidden"} w-full flex-col border-r border-slate-200 bg-slate-50 p-3 md:static md:flex md:w-72 dark:border-slate-800 dark:bg-slate-950`}
+        className={`${menuOpen ? "fixed inset-0 z-20 flex" : "hidden"} w-full flex-col border-r border-white/5 bg-ink-900 p-3 md:static md:flex md:w-72`}
       >
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-lg font-semibold">ECHO-AI</span>
+          <Logo />
           <button className="md:hidden" onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button>
         </div>
         <button
           onClick={() => openConversation(null)}
-          className="mb-3 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white"
+          className="mb-3 rounded-lg bg-indigo-500 px-3 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-400"
         >
           + New conversation
         </button>
@@ -116,7 +124,7 @@ export default function App() {
             <li key={c.id} className="group flex items-center">
               <button
                 onClick={() => openConversation(c.id)}
-                className={`flex-1 truncate rounded-lg px-3 py-1.5 text-left text-sm ${c.id === activeId && view === "chat" ? "bg-slate-200 dark:bg-slate-800" : "hover:bg-slate-100 dark:hover:bg-slate-900"}`}
+                className={`flex-1 truncate rounded-lg px-3 py-1.5 text-left text-sm ${c.id === activeId && view === "chat" ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"}`}
               >
                 {c.title || "Untitled"}
               </button>
@@ -130,16 +138,16 @@ export default function App() {
             </li>
           ))}
         </ul>
-        <div className="mt-3 border-t border-slate-200 pt-3 text-sm dark:border-slate-800">
+        <div className="mt-3 border-t border-white/5 pt-3 text-sm">
           <p className="truncate text-slate-500">{email}</p>
-          <button onClick={logout} className="mt-1 text-indigo-600 hover:underline">Log out</button>
+          <button onClick={logout} className="mt-1 text-indigo-300 hover:text-indigo-200">Log out</button>
         </div>
       </aside>
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b border-slate-200 px-4 py-2 md:hidden dark:border-slate-800">
+        <header className="flex items-center gap-3 border-b border-white/5 px-4 py-2 md:hidden">
           <button onClick={() => setMenuOpen(true)} aria-label="Open menu">☰</button>
-          <span className="font-semibold">ECHO-AI</span>
+          <Logo />
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto">
           {view === "chat" && (
@@ -164,7 +172,7 @@ export default function App() {
             />
           )}
         </div>
-        <footer className="border-t border-slate-200 px-4 py-1.5 text-center text-xs text-slate-500 dark:border-slate-800">
+        <footer className="border-t border-white/5 px-4 py-1.5 text-center text-xs text-slate-500">
           ECHO-AI can make mistakes and is not a medical service. In an emergency, contact local emergency services.
         </footer>
       </main>
