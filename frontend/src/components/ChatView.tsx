@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "../api";
 import { VoiceRecorder, speak } from "../audio";
+import { CameraMood, type FaceMood } from "../faceMood";
 import type { ChatItem, ChatResponse } from "../types";
 import { EmotionBadge } from "./EmotionBadge";
 
@@ -19,6 +20,42 @@ export function ChatView({ conversationId, initialMessages, autoSpeak, onConvers
   const [error, setError] = useState<string | null>(null);
   const recorder = useRef<VoiceRecorder | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
+  const camera = useRef<CameraMood | null>(null);
+  const video = useRef<HTMLVideoElement>(null);
+  const [cameraState, setCameraState] = useState<"off" | "consent" | "starting" | "on">("off");
+  const [faceMood, setFaceMood] = useState<FaceMood | null>(null);
+
+  // Always release the camera when leaving the chat.
+  useEffect(() => () => {
+    camera.current?.stop();
+  }, []);
+
+  async function startCamera() {
+    setError(null);
+    setCameraState("starting");
+    try {
+      camera.current = new CameraMood();
+      await camera.current.start(video.current!, setFaceMood);
+      setCameraState("on");
+    } catch {
+      camera.current?.stop();
+      camera.current = null;
+      setCameraState("off");
+      setError("Camera access was denied or is unavailable.");
+    }
+  }
+
+  function stopCamera() {
+    camera.current?.stop();
+    camera.current = null;
+    setFaceMood(null);
+    setCameraState("off");
+  }
+
+  /** The averaged expression to send with a message, only while the camera is on. */
+  function currentFace(): FaceMood | null {
+    return cameraState === "on" ? camera.current?.current() ?? null : null;
+  }
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,7 +98,7 @@ export function ChatView({ conversationId, initialMessages, autoSpeak, onConvers
       { id: -1, conversation_id: conversationId ?? 0, role: "user", content: text, created_at: "" },
     ]);
     try {
-      applyResponse(await api.chat(text, conversationId ?? undefined), text);
+      applyResponse(await api.chat(text, conversationId ?? undefined, currentFace()), text);
     } catch (e) {
       setItems((prev) => prev.filter((m) => m.id !== -1));
       setInput(text);
@@ -87,7 +124,7 @@ export function ChatView({ conversationId, initialMessages, autoSpeak, onConvers
     setBusy(true);
     try {
       const wav = await recorder.current!.stop();
-      const response = await api.chatVoice(wav, conversationId ?? undefined);
+      const response = await api.chatVoice(wav, conversationId ?? undefined, currentFace());
       applyResponse(response, response.transcript ?? "(voice message)");
     } catch (e) {
       setError((e as Error).message);
@@ -177,6 +214,43 @@ export function ChatView({ conversationId, initialMessages, autoSpeak, onConvers
 
       <form onSubmit={send} className="border-t border-slate-200 bg-white/80 p-3 dark:border-slate-800 dark:bg-slate-950/80">
         {error && <p className="mx-auto mb-2 max-w-2xl text-sm text-red-600">{error}</p>}
+        {cameraState === "consent" && (
+          <div className="mx-auto mb-3 max-w-2xl rounded-xl border border-indigo-400/20 bg-indigo-500/10 p-4 text-sm">
+            <p className="font-medium text-white">Let ECHO-AI see your expression?</p>
+            <p className="mt-1 text-slate-300">
+              Your video is analyzed only in this browser and is never uploaded or saved. Only a short
+              label such as &ldquo;sad, 70%&rdquo; is sent with your messages, and only while the camera is on.
+              The estimate can be wrong.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button type="button" onClick={startCamera}
+                className="rounded-lg bg-indigo-500 px-3 py-1.5 font-medium text-white hover:bg-indigo-400">
+                Turn on camera
+              </button>
+              <button type="button" onClick={() => setCameraState("off")}
+                className="rounded-lg px-3 py-1.5 text-slate-300 hover:bg-white/5">
+                Not now
+              </button>
+            </div>
+          </div>
+        )}
+        <div className={`mx-auto mb-3 max-w-2xl items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-2 ${cameraState === "on" || cameraState === "starting" ? "flex" : "hidden"}`}>
+          <video ref={video} muted playsInline className="h-20 w-28 -scale-x-100 rounded-lg bg-black object-cover" />
+          <div className="flex-1 text-sm">
+            <p className="text-slate-300">
+              {cameraState === "starting"
+                ? "Starting camera…"
+                : faceMood
+                  ? <>Expression: <span className="font-medium text-white">{faceMood.emotion}</span> · {Math.round(faceMood.confidence * 100)}%</>
+                  : "Looking for your face…"}
+            </p>
+            <p className="text-xs text-slate-500">Analyzed on this device only · estimate, not a diagnosis</p>
+          </div>
+          <button type="button" onClick={stopCamera}
+            className="rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:bg-white/5">
+            Turn off
+          </button>
+        </div>
         <div className="mx-auto flex max-w-2xl gap-2">
           <button
             type="button"
@@ -186,6 +260,15 @@ export function ChatView({ conversationId, initialMessages, autoSpeak, onConvers
             className={`rounded-full px-4 ${recording ? "animate-pulse bg-rose-600 text-white" : "bg-slate-200 dark:bg-slate-800"}`}
           >
             {recording ? "■" : "🎙"}
+          </button>
+          <button
+            type="button"
+            onClick={() => (cameraState === "off" ? setCameraState("consent") : stopCamera())}
+            aria-label={cameraState === "off" ? "Share facial expression (camera)" : "Turn camera off"}
+            aria-pressed={cameraState === "on"}
+            className={`rounded-full px-4 ${cameraState === "on" ? "bg-indigo-500 text-white" : "bg-slate-200 dark:bg-slate-800"}`}
+          >
+            📷
           </button>
           <input
             value={input}

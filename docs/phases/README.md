@@ -35,6 +35,7 @@ plan (one approved phase at a time) was replaced by this plan, implemented on
 | 3.7 | Feedback, analytics, privacy settings (emotion statistics opt-in) | ✅ Implemented, tested |
 | 3.8 | Frontend (React + Vite + TypeScript + Tailwind): auth, text/voice chat, emotion, sources, feedback, TTS, history, insights, memory & settings | ✅ Implemented, built, exercised in a browser |
 | 3.8b | Landing page and dark theme (design inspired by Cruip's Open PRO template, recreated with original code and assets; no template files included because the template is GPL-3.0 with a no-redistribution request and this repo is public MIT) | ✅ Implemented, built, exercised in a browser |
+| 3.8c | Counseling-style responses (past sessions, mood history, per-signal labels, no reflexive referrals) and opt-in in-browser camera facial expression as a fusion signal | ✅ Implemented, tested (camera verified up to model loading; not tested with a live face) |
 | 3.9 | Docker, Docker Compose, GitHub Actions CI | ⚠️ Written, **not validated** (Docker is not installed on the development machine; CI has not run yet) |
 
 ### Key decisions

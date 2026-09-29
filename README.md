@@ -34,7 +34,8 @@ medical service and cannot provide crisis care.
 | Backend API, database, authentication | ✅ Implemented and tested |
 | Audio preprocessing, feature extraction | ✅ Implemented and tested |
 | Voice emotion model (SVM vs Random Forest on RAVDESS) | ✅ Trained; measured results in [`docs/ml/VOICE-EMOTION-MODEL.md`](docs/ml/VOICE-EMOTION-MODEL.md) |
-| Speech-to-text, text emotion, fusion | ✅ Implemented |
+| Speech-to-text, text emotion, optional camera facial expression (in-browser), fusion | ✅ Implemented |
+| Counseling-style responses (reflective, uses past sessions and mood signals, tailored techniques) | ✅ Implemented |
 | Context, memory, response policy, LLM, RAG, safety | ✅ Implemented and tested |
 | Feedback, analytics, privacy settings | ✅ Implemented and tested |
 | Frontend (landing page, sign-in/up, chat, insights, settings; single dark theme) | ✅ Implemented, built, exercised in a browser |

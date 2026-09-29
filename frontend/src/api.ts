@@ -1,3 +1,4 @@
+import type { FaceMood } from "./faceMood";
 import type {
   Analytics,
   ChatResponse,
@@ -77,16 +78,29 @@ export const api = {
     request<{ access_token: string }>("/auth/login", json("POST", { email, password })),
   me: () => request<{ id: number; email: string }>("/auth/me"),
 
-  chat: (message: string, conversationId?: number) =>
+  chat: (message: string, conversationId?: number, face?: FaceMood | null) =>
     request<ChatResponse>(
       "/chat",
-      json("POST", { message, ...(conversationId ? { conversation_id: conversationId } : {}) }),
+      json("POST", {
+        message,
+        ...(conversationId ? { conversation_id: conversationId } : {}),
+        ...(face ? { face } : {}),
+      }),
     ),
-  chatVoice: (wav: Blob, conversationId?: number) =>
-    request<ChatResponse>(
-      `/chat/voice${conversationId ? `?conversation_id=${conversationId}` : ""}`,
-      { method: "POST", body: wav, headers: { "Content-Type": "audio/wav" } },
-    ),
+  chatVoice: (wav: Blob, conversationId?: number, face?: FaceMood | null) => {
+    const params = new URLSearchParams();
+    if (conversationId) params.set("conversation_id", String(conversationId));
+    if (face) {
+      params.set("face_emotion", face.emotion);
+      params.set("face_confidence", String(face.confidence));
+    }
+    const query = params.toString();
+    return request<ChatResponse>(`/chat/voice${query ? `?${query}` : ""}`, {
+      method: "POST",
+      body: wav,
+      headers: { "Content-Type": "audio/wav" },
+    });
+  },
 
   history: () => request<{ conversations: Conversation[] }>("/history?limit=50"),
   deleteConversation: (id: number) => request<void>(`/history/${id}`, { method: "DELETE" }),

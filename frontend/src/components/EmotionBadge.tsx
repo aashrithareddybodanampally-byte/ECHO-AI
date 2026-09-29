@@ -12,10 +12,11 @@ const COLORS: Record<string, string> = {
 };
 
 export function EmotionBadge({ emotion }: { emotion: FusionResult }) {
-  const { voice, text, context } = emotion.signals;
+  const { voice, text, face, context } = emotion.signals;
   const parts = [
     voice !== null && `voice ${Math.round(voice * 100)}%`,
     text !== null && `text ${Math.round(text * 100)}%`,
+    face != null && `face ${Math.round(face * 100)}%`,
     context !== null && `context ${Math.round(context * 100)}%`,
   ].filter(Boolean);
   return (

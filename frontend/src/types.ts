@@ -25,7 +25,7 @@ export interface Source {
 export interface FusionResult {
   state: string;
   confidence: number;
-  signals: { voice: number | null; text: number | null; context: number | null };
+  signals: { voice: number | null; text: number | null; face?: number | null; context: number | null };
 }
 
 export type SafetyLevel = "normal" | "distress" | "high_risk";

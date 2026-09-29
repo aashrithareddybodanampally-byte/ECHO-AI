@@ -68,14 +68,15 @@ Response `200` — `VoiceEmotionResult`:
 ### `POST /emotion/fusion` — multimodal fusion
 Request: `{"voice": VoiceEmotionResult?, "text": TextAnalysisResult?, "context": {"label", "score"}?}` (voice or text required).
 Response: `{"state": "sad", "confidence": 0.733, "signals": {"voice": 0.72, "text": 0.81, "context": 0.65}}`.
-Method: weighted late fusion 0.5 voice / 0.3 text / 0.2 context, re-normalized over present signals (`ml/models/fusion.py`).
+Request may also include `"face": {"emotion", "confidence"}` (voice, text or face required); `signals` includes `face`.
+Method: weighted late fusion 0.5 voice / 0.3 face / 0.3 text / 0.2 context, re-normalized over present signals, labels normalized (e.g. `disgusted` → `disgust`) (`ml/models/fusion.py`).
 
 ### `POST /rag/retrieve`
 Request `{"query": "...", "top_k": 1-20 (default 5)}` → `{"query", "chunks": [{"source", "content", "score"}]}`.
 TF-IDF cosine similarity over `rag/knowledge_base/`; chunks scoring below 0.05 are dropped.
 
 ### `POST /chat` — text turn
-Request `{"message": "...", "conversation_id": 12?}` (omit the id to start a conversation).
+Request `{"message": "...", "conversation_id": 12?, "face": {"emotion": "sad", "confidence": 0.8}?}` (omit the id to start a conversation). `face` is the optional camera expression estimate computed in the browser (`@vladmandic/face-api`); video never reaches the server.
 
 Response `200`:
 ```json
@@ -95,7 +96,9 @@ Response `200`:
 - `llm_model`: the model that answered (e.g. `openai/gpt-oss-120b` on Groq or `claude-opus-5-5`), `"offline-template-v1"` when no API key is configured or the provider failed, or `"safety-protocol"`.
 - `timings_ms`: measured per request (no targets are claimed).
 
-### `POST /chat/voice?conversation_id=12` — voice turn
+### `POST /chat/voice?conversation_id=12&face_emotion=sad&face_confidence=0.8` — voice turn
+
+`face_emotion` and `face_confidence` are optional but must be sent together (`422` otherwise).
 Raw audio body → preprocessing → speech-to-text (faster-whisper `base`) and voice emotion → same pipeline as `/chat`.
 Response is a `ChatResponse` with `transcript` set and `timings_ms.audio_ms`. If the voice model is not trained the turn still works with text-only emotion.
 

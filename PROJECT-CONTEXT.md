@@ -40,7 +40,9 @@ decisions to the coding agent (2026-09-29).
 - **Audio ML** (`ml/audio`, `ml/training`, `ml/inference`): preprocessing, 100-dim features, RAVDESS training with SVM vs Random Forest, inference. Speaker-independent test accuracy 0.458 / macro-F1 0.453 (8 classes): [`docs/ml/VOICE-EMOTION-MODEL.md`](docs/ml/VOICE-EMOTION-MODEL.md).
 - **Speech-to-text**: faster-whisper `base`, local CPU. Verified manually with real speech; not in automated tests (model download).
 - **Text analysis** (`ml/nlp`): VADER sentiment + keyword emotion lexicon (heuristic, uncalibrated).
-- **Fusion** (`ml/models`): weighted late fusion of voice, text and previous-turn context.
+- **Fusion** (`ml/models`): weighted late fusion of voice, text, optional facial expression and previous-turn context.
+- **Camera expression (opt-in)**: facial expression estimated in the browser with `@vladmandic/face-api` (MIT); only a label and confidence are sent, never video. Not covered by automated tests with a real camera.
+- **Counseling-style responses**: prompt built around reflective listening, one exploratory question, past-session and mood-history context, tailored evidence-based techniques; no diagnosis or medication advice; referrals only for hopelessness/worthlessness language or on request.
 - **Conversation pipeline**: context window, user-approved memory, response policy, LLM (Groq or Claude behind `LLMService`; labeled offline fallback), RAG with cited sources, input/output safety, crisis protocol.
 - **RAG** (`rag/`): original knowledge base, Markdown chunking, TF-IDF retrieval.
 - **Safety** (`safety/`): rule-based input classifier (normal/distress/high-risk), output guardrail.

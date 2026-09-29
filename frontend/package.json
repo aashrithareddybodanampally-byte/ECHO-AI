@@ -4,12 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-face-models.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-face-models.mjs",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run"
   },
   "dependencies": {
+    "@vladmandic/face-api": "^1.7.15",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
