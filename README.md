@@ -1,265 +1,195 @@
 # ECHO-AI
 
-> A multimodal AI conversational system that combines voice and text understanding for intelligent, context-aware interactions.
+> A multimodal, context-aware, safety-first conversational companion that
+> listens to **what** you say and **how** you say it, and answers the way a
+> warm counselor would: briefly, attentively and without rushing to fix.
+
+ECHO-AI is **not a medical service**. It does not diagnose, treat or give
+medication advice, and its emotion estimates are model predictions that can be
+wrong. In an emergency, contact local emergency services (India: Tele-MANAS
+14416 · US & Canada: 988 · elsewhere: findahelpline.com).
 
 ---
 
-## Overview
+## Features
 
-ECHO-AI is a multimodal conversational AI platform designed to process both text and voice input, analyze speech and language characteristics, maintain conversation context and user memory, retrieve relevant information through RAG, generate LLM-powered responses, and enforce safety guardrails — all within a modular, production-ready architecture.
-
-## Vision
-
-Create a conversational AI system that truly *listens* — understanding not just the words, but the tone, emotion, and context behind them — to deliver responses that are accurate, personalized, and safe.
-
----
-
-## Current Phase
-
-### ✅ Phase 1 — Development Environment & Repository Foundation
-
-The project is currently in Phase 1. This phase establishes:
-
-- [x] Git repository with branching strategy
-- [x] Project directory structure
-- [x] Environment variable strategy
-- [x] Documentation foundation
-- [x] Agent instructions for AI-assisted development
-- [x] Development workflow documentation
-- [x] Environment validation tooling
-
-> **No AI/ML functionality, application logic, or deployment infrastructure has been implemented yet.** All features listed below are **planned**.
+| | |
+|---|---|
+| 💬 **Text & voice chat** | Type or speak. Voice is transcribed locally with faster-whisper; replies can be read aloud by the browser. |
+| 🌊 **Mood understanding** | A trained voice-emotion model, a text sentiment/emotion analyzer and (optionally) your facial expression are fused into one mood estimate. |
+| 📷 **Optional camera** | Opt-in. Facial expression is analyzed **in your browser only**; video is never uploaded, only a label like "sad, 80%". |
+| 🧑‍⚕️ **Counseling-style replies** | Short, reflective replies with one small question at a time; listens first, offers one idea only when you ask. Based on motivational interviewing (OARS), DBT validation and person-centred practice ([details](docs/ml/COUNSELING-STYLE.md)). |
+| 🧠 **Memory you control** | Recent messages, earlier conversations and facts you choose to save give replies context. View, delete or switch memory off at any time. |
+| 📚 **Cited sources** | When you ask for help, suggestions can draw on a small original knowledge base (study, sleep, relaxation, support) and cite it. |
+| 🛡 **Safety** | Distress gets gentler replies; high-risk messages get a fixed crisis response with helplines and the LLM is bypassed. Replies are checked for diagnoses, dosing advice and self-harm content. |
+| 📈 **Insights & feedback** | Rate replies; opt in to see your mood distribution over time. |
+| 🔒 **Privacy by default** | Raw audio and video are never stored; emotion statistics are off until you enable them. |
 
 ---
 
-## Planned Capabilities
-
-| Capability | Status | Description |
-|---|---|---|
-| Text conversation | 🔮 Planned | Real-time text-based chat interface |
-| Voice input | 🔮 Planned | Microphone capture and audio streaming |
-| Speech-to-text | 🔮 Planned | Whisper-based transcription |
-| Voice emotion analysis | 🔮 Planned | Emotion detection from audio features |
-| Text/NLP analysis | 🔮 Planned | Sentiment, intent, and entity extraction |
-| Multimodal fusion | 🔮 Planned | Combined audio + text signal analysis |
-| Conversation context | 🔮 Planned | Multi-turn conversation history |
-| User memory | 🔮 Planned | Opt-in persistent user preferences |
-| RAG | 🔮 Planned | Retrieval-Augmented Generation |
-| LLM integration | 🔮 Planned | API-based response generation |
-| Safety guardrails | 🔮 Planned | Content filtering and bias detection |
-| Analytics | 🔮 Planned | Conversation quality and usage metrics |
-
----
-
-## Architecture
+## How a message is handled
 
 ```
-Frontend (React + Vite)
-        │
-        ▼
-  Backend API (FastAPI)
-        │
-  ┌─────┼─────────┬──────────┐
-  ▼     ▼         ▼          ▼
- ML   Database   RAG      Safety
-  │              │
-  └──────┬───────┘
-         ▼
-        LLM
-         ▼
-      Response
-```
-
-For detailed architecture documentation, see [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
-
----
-
-## Technology Stack
-
-| Layer | Technology | Status |
-|---|---|---|
-| Frontend | React + Vite + Tailwind CSS | 🔮 Planned |
-| Backend | Python + FastAPI | 🔮 Planned |
-| Database | PostgreSQL | 🔮 Planned |
-| ML | Python, scikit-learn, librosa, NumPy, pandas | 🔮 Planned |
-| Speech | Whisper (or equivalent) | 🔮 Planned |
-| NLP | Transformers / NLP tooling | 🔮 Planned |
-| RAG | Embeddings + Vector DB | 🔮 Planned |
-| LLM | API-based (e.g., OpenAI, Anthropic) | 🔮 Planned |
-| Testing | Pytest, Vitest/Jest | 🔮 Planned |
-| Infrastructure | Docker, Docker Compose, GitHub Actions | 🔮 Planned |
-
-For detailed technology decisions, see [`docs/architecture/TECH-STACK.md`](docs/architecture/TECH-STACK.md).
-
----
-
-## Repository Structure
-
-```
-ECHO-AI/
-├── frontend/              # React + Vite frontend
-├── backend/               # FastAPI backend
-├── ml/                    # ML pipelines (audio, NLP, fusion)
-│   ├── audio/
-│   ├── nlp/
-│   ├── models/
-│   ├── training/
-│   ├── inference/
-│   └── evaluation/
-├── rag/                   # RAG system
-│   ├── ingestion/
-│   ├── embeddings/
-│   ├── retrieval/
-│   └── evaluation/
-├── safety/                # Safety & guardrails
-├── database/              # DB schemas & migrations
-├── tests/                 # All tests
-│   ├── backend/
-│   ├── frontend/
-│   ├── ml/
-│   ├── rag/
-│   └── integration/
-├── docs/                  # Documentation
-├── scripts/               # Utility scripts
-├── infrastructure/        # Docker, CI/CD
-├── data/                  # Datasets (git-ignored)
-├── models/                # Trained models (git-ignored)
-├── logs/                  # Log output (git-ignored)
-└── .github/workflows/     # GitHub Actions
+You (text / voice / optional camera label)
+  │
+  ├─ voice ─> preprocessing ─> speech-to-text ─> voice emotion model
+  ├─ words ─> sentiment + emotion
+  └─ face  ─> expression estimated in the browser
+                     │
+                     ▼
+        fusion (voice 0.5 · face 0.3 · words 0.3 · previous turn 0.2)
+                     │
+        input safety ── high risk ──> crisis response with helplines (no LLM)
+                     │
+        context: this conversation · earlier sessions · saved memories · mood history
+                     │
+        response policy: stage (explore → deepen → support), tone, length
+                     │
+        knowledge-base retrieval (only when you ask for help)
+                     │
+        LLM (Groq or Claude; labeled offline fallback) ─> output safety ─> reply
 ```
 
 ---
 
-## Development Roadmap
+## Quick start (local, Windows / macOS / Linux)
 
-| Phase | Focus | Status |
-|---|---|---|
-| **Phase 1** | Development environment & repository foundation | ✅ Current |
-| **Phase 2** | Backend API, database, authentication | 🔮 Planned |
-| **Phase 3** | Frontend application | 🔮 Planned |
-| **Phase 4** | ML pipelines (audio + NLP) | 🔮 Planned |
-| **Phase 5** | RAG system & vector search | 🔮 Planned |
-| **Phase 6** | LLM integration & response generation | 🔮 Planned |
-| **Phase 7** | Safety guardrails & content filtering | 🔮 Planned |
-| **Phase 8** | Multimodal fusion & advanced features | 🔮 Planned |
-| **Phase 9** | Analytics, monitoring & MLOps | 🔮 Planned |
-| **Phase 10** | Production deployment & CI/CD | 🔮 Planned |
+Prerequisites: **Python 3.10+**, **Node.js 22+**.
 
----
-
-## Local Development
-
-### Prerequisites
-
-- **Git** ≥ 2.30
-- **Python** ≥ 3.10
-- **Node.js** ≥ 18
-- **npm** ≥ 9
-- Docker & Docker Compose (optional, for containerized development)
-
-### Getting Started
+### 1. Backend
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd ECHO-AI
-
-# Copy environment template
+cd backend
+python -m venv .venv
+.venv\Scripts\activate             # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
 cp .env.example .env
-
-# Edit .env with your configuration
-# (no actual services to configure in Phase 1)
-
-# Run environment validation
-# On Windows (PowerShell):
-.\scripts\check_environment.ps1
-
-# On Linux/macOS:
-bash scripts/check_environment.sh
 ```
 
-### Environment Variables
+Edit `backend/.env` (git-ignored, never commit it):
 
-Copy `.env.example` to `.env` and fill in your values. **Never commit `.env` to version control.**
+| Key | Required | Value |
+|---|---|---|
+| `SECRET_KEY` | ✅ | A long random string: `python -c "import secrets; print(secrets.token_urlsafe(64))"` |
+| `DATABASE_URL` | ✅ | `sqlite:///./echo_ai_dev.db` (simplest; tables are created automatically) or a PostgreSQL URL (then run `alembic upgrade head`) |
+| `GROQ_API_KEY` | Recommended | From [console.groq.com/keys](https://console.groq.com/keys). Enables real LLM replies (`GROQ_MODEL`, default `openai/gpt-oss-120b`) |
+| `ANTHROPIC_API_KEY` | Optional | Alternative LLM (Claude), used when no Groq key is set |
 
-See `.env.example` for all available configuration options.
+Without an LLM key the app still works with a clearly labeled offline responder.
+All other settings have working defaults (see `backend/.env.example`).
 
----
-
-## Git Workflow
-
-1. **`main`** — Production-ready code. Protected branch.
-2. **`develop`** — Integration branch for active development.
-3. **Feature branches** — Branch from `develop`, merge back via PR.
-
-### Branch Naming
-
-```
-feat/<feature-name>
-fix/<bug-description>
-docs/<documentation-topic>
-chore/<maintenance-task>
+```bash
+uvicorn app.main:app --reload --port 8000      # API docs: http://localhost:8000/docs
 ```
 
-### Commit Conventions
+### 2. Voice emotion model (once)
 
+Download the RAVDESS speech dataset (`Audio_Speech_Actors_01-24.zip`, CC BY-NC-SA 4.0) from
+[Zenodo](https://zenodo.org/records/1188976), extract it to `data/raw/ravdess/`, then from the repository root:
+
+```bash
+python -m ml.training.train_voice_emotion --data data/raw/ravdess --out models
 ```
-feat: add user authentication endpoint
-fix: resolve audio sample rate mismatch
-docs: update RAG architecture documentation
-chore: update Python dependencies
-test: add unit tests for emotion classifier
+
+Without the model, chat and voice still work; voice emotion is simply left out.
+
+### 3. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev                                    # http://localhost:5173
 ```
 
----
+`npm run dev` / `npm run build` copy the small face-expression models into
+`public/models/` automatically.
 
-## Contribution Guidelines
+### Docker (not validated yet)
 
-1. Read `AGENTS.md` for coding standards and rules.
-2. Read `PROJECT-CONTEXT.md` for architectural context.
-3. Branch from `develop` — never commit directly to `main`.
-4. Write tests for new functionality.
-5. Update documentation when changing behavior.
-6. Keep commits focused and well-described.
-7. Do not commit secrets, large datasets, or generated models.
+```bash
+cp .env.docker.example .env                    # set POSTGRES_PASSWORD, SECRET_KEY, GROQ_API_KEY
+docker compose up --build
+```
 
 ---
 
 ## Testing
 
-Tests are organized under `tests/` mirroring the source structure:
-
-```
-tests/
-├── backend/       # Backend API and service tests
-├── frontend/      # Frontend component and integration tests
-├── ml/            # ML model and pipeline tests
-├── rag/           # RAG system tests
-└── integration/   # Cross-module integration tests
-```
-
 ```bash
-# Run backend tests (when implemented)
-pytest tests/backend/
+cd backend && pytest                           # API, pipeline, security, LLM providers, policy
+pytest tests                                   # from repo root: audio ML, NLP, fusion, RAG, safety
+cd frontend && npm test && npm run build       # WAV encoding, routing, face-mood averaging, type-check
+```
 
-# Run all tests
-pytest
+Tests never call a paid LLM, never download the Whisper model, never use your
+`backend/.env` and use synthetic audio only.
+
+---
+
+## Measured results
+
+Voice emotion model (RAVDESS, 8 emotions, speaker-independent test set):
+**accuracy 0.458, macro-F1 0.453** (chance 0.125); ~185 ms per clip on CPU.
+Full model card, confusion matrix and error analysis:
+[`docs/ml/VOICE-EMOTION-MODEL.md`](docs/ml/VOICE-EMOTION-MODEL.md).
+
+---
+
+## Documentation
+
+| Document | Contents |
+|---|---|
+| [`docs/api/CONTRACTS.md`](docs/api/CONTRACTS.md) | Every API endpoint, request/response shape, status code and service interface |
+| [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) | Components and data flow |
+| [`docs/architecture/TECH-STACK.md`](docs/architecture/TECH-STACK.md) | Technologies in use and why |
+| [`docs/ml/VOICE-EMOTION-MODEL.md`](docs/ml/VOICE-EMOTION-MODEL.md) | Voice model card with real metrics |
+| [`docs/ml/COUNSELING-STYLE.md`](docs/ml/COUNSELING-STYLE.md) | How ECHO-AI talks, with research sources |
+| [`docs/phases/README.md`](docs/phases/README.md) | Implementation history, decisions and status |
+| [`backend/README.md`](backend/README.md) | Backend setup, configuration and endpoints |
+| [`AGENTS.md`](AGENTS.md) / [`PROJECT-CONTEXT.md`](PROJECT-CONTEXT.md) | Rules for coding agents / project context |
+
+---
+
+## Repository structure
+
+```
+ECHO-AI/
+├── backend/          # FastAPI app, conversation pipeline, Alembic migrations, backend tests
+├── frontend/         # React + Vite + TypeScript + Tailwind (landing page, chat, insights, settings)
+├── ml/               # audio preprocessing, features, speech-to-text, training, inference, text emotion, fusion
+├── rag/              # original knowledge base, chunking, TF-IDF retrieval
+├── safety/           # input/output guardrails, crisis protocol
+├── tests/            # ML, RAG and safety tests
+├── infrastructure/   # Dockerfiles
+├── docs/             # API, architecture, ML, phase docs
+├── data/             # datasets (git-ignored)
+├── models/           # trained model artifacts (git-ignored)
+└── .github/workflows # CI
 ```
 
 ---
 
-## Future Work
+## Known limitations
 
-See the [Development Roadmap](#development-roadmap) for the full plan. Key upcoming milestones:
-
-- **Phase 2**: FastAPI backend with PostgreSQL, user authentication, session management
-- **Phase 3**: React frontend with real-time chat interface
-- **Phase 4**: Audio emotion detection and NLP analysis pipelines
-- **Phase 5**: RAG with vector search for knowledge retrieval
-- **Phase 6**: LLM-powered response generation
+- The text emotion analyzer is a keyword heuristic; masked feelings ("I act like it's fine") can read as calm.
+- The voice model is trained on acted studio speech; accuracy on real microphones has not been measured.
+- Facial-expression accuracy with real cameras has not been measured.
+- Docker, Compose and CI are written but have not been run.
+- An AI companion is not a therapist and cannot replace professional care.
 
 ---
 
-## License
+## Git workflow
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+- **`main`**: stable. **`develop`**: integration.
+- Branch from `develop` as `feature/<phase-or-feature>`, open a PR, and merge after human review.
+- Conventional commits (`feat:`, `fix:`, `docs:`, `chore:`, `test:`).
+
+---
+
+## Data and licensing
+
+- Code: **MIT** ([LICENSE](LICENSE)).
+- The voice model is trained on **RAVDESS** (Livingstone & Russo, 2018), **CC BY-NC-SA 4.0**. The dataset and trained artifacts are not committed, and models trained on it are **non-commercial**.
+- Facial expression uses [`@vladmandic/face-api`](https://github.com/vladmandic/face-api) (MIT).
+- The knowledge base in `rag/knowledge_base/` and the frontend design are original work for this project.

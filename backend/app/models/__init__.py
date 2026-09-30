@@ -5,5 +5,8 @@
 from app.models.user import User
 from app.models.conversation import Conversation
 from app.models.message import Message
+from app.models.memory import Memory
+from app.models.feedback import Feedback
+from app.models.analysis_result import AnalysisResult
 
-__all__ = ["User", "Conversation", "Message"]
+__all__ = ["User", "Conversation", "Message", "Memory", "Feedback", "AnalysisResult"]

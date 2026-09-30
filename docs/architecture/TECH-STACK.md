@@ -1,7 +1,8 @@
 # ECHO-AI — Technology Stack
 
 > This document records the **planned** technology choices for ECHO-AI.
-> These are design decisions — most dependencies are **not yet installed**.
+> Backend dependencies are installed (see `backend/requirements.txt`); all other
+> choices are planned and **not yet installed**.
 
 ---
 
@@ -9,14 +10,14 @@
 
 | Technology | Purpose | Version (Target) |
 |---|---|---|
-| React | UI framework | 18+ |
-| Vite | Build tool & dev server | 5+ |
-| Tailwind CSS | Utility-first CSS | 3+ |
-| TypeScript | Type-safe JavaScript | 5+ |
-| Vitest or Jest | Unit testing | Latest |
-| React Testing Library | Component testing | Latest |
+| React | UI framework | 19 (in use) |
+| Vite | Build tool & dev server | 8 (in use) |
+| Tailwind CSS | Utility-first CSS | 4 (in use) |
+| TypeScript | Type-safe JavaScript | 5 (in use) |
+| Vitest | Unit testing | 5 (in use) |
+| @vladmandic/face-api | In-browser facial-expression estimation (opt-in camera), MIT | 1.7 (in use, lazy-loaded) |
 
-**Rationale**: Vite provides fast HMR and build performance. React is the team's primary competency. Tailwind enables rapid, consistent styling. TypeScript catches errors at compile time.
+**Rationale**: Vite provides fast HMR and build performance. React is the team's primary competency. Tailwind enables rapid, consistent styling. TypeScript catches errors at compile time. face-api runs entirely in the browser, so camera video never leaves the device.
 
 ---
 
@@ -30,7 +31,10 @@
 | Pydantic | Data validation & settings | 2+ |
 | SQLAlchemy | ORM & database toolkit | 2+ |
 | Alembic | Database migrations | Latest |
-| python-dotenv | Environment variable loading | Latest |
+| pydantic-settings | Environment-based settings (used instead of python-dotenv) | 2+ |
+| psycopg | PostgreSQL driver | 3+ |
+| PyJWT | JWT access tokens | 2.8+ |
+| bcrypt | Password hashing | <4.0 |
 
 **Rationale**: FastAPI provides automatic OpenAPI docs, async support, and Pydantic-based validation. SQLAlchemy 2.0 offers both ORM and Core patterns. Alembic handles schema evolution.
 
@@ -71,7 +75,7 @@
 | Vector database (TBD) | Similarity search & storage |
 | LangChain or LlamaIndex | RAG orchestration (under evaluation) |
 
-**Rationale**: RAG technology choices will be finalized during Phase 5 based on scale requirements and embedding model selection.
+**Rationale**: RAG technology choices will be finalized during the RAG phase based on scale requirements and embedding model selection.
 
 ---
 
@@ -79,7 +83,7 @@
 
 | Technology | Purpose |
 |---|---|
-| OpenAI API / Anthropic API | Response generation |
+| Groq API / Anthropic API | Response generation (Groq preferred when configured) |
 | LiteLLM (potential) | Multi-provider abstraction |
 
 **Rationale**: API-based LLMs avoid the infrastructure cost of self-hosting. LiteLLM would allow provider-agnostic integration.
@@ -122,6 +126,13 @@
 
 ## Installation Status
 
-> **Phase 1**: No production dependencies are installed. Only the development environment (Git, Python, Node.js) is required.
+> **In use** (see `backend/requirements.txt`, `ml/requirements.txt`, `frontend/package.json`):
+> FastAPI, Uvicorn, pydantic-settings, SQLAlchemy, psycopg, Alembic, PyJWT, bcrypt,
+> email-validator, pytest, httpx, groq, anthropic, NumPy, SciPy, soundfile, librosa,
+> scikit-learn, joblib, matplotlib, vaderSentiment, faster-whisper; React 19,
+> Vite 8, TypeScript 5, Tailwind CSS 4, Vitest, @vladmandic/face-api.
 >
-> Dependencies will be installed incrementally as each phase begins, keeping the project lightweight.
+> **Planned choices that were not used**: pandas, Hugging Face Transformers,
+> PyTorch/TensorFlow, Sentence Transformers, a vector database, LangChain/LlamaIndex,
+> LiteLLM, Playwright/Cypress, Prometheus/Grafana, MLflow, Sentry. Reasons are in
+> [`docs/phases/README.md`](../phases/README.md) (Key decisions).

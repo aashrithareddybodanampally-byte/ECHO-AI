@@ -1,7 +1,8 @@
 # ECHO-AI — Architecture
 
 > This document describes the **planned** high-level architecture of ECHO-AI.
-> As of Phase 1, only the repository foundation exists. No components are implemented yet.
+> All components below are implemented on `feature/echo-ai-completion` except where noted.
+> Phase status: [`docs/phases/README.md`](../phases/README.md).
 
 ---
 
@@ -59,31 +60,32 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
 - **Technology**: React + Vite + Tailwind CSS
 - **Responsibility**: User interface for text/voice chat, settings, analytics
 - **Communication**: REST and WebSocket connections to Backend API
-- **Status**: 🔮 Planned (Phase 3)
+- **Status**: ✅ Implemented (React + Vite + TypeScript + Tailwind): landing page, sign-in/up, text and voice chat, emotion badges, cited sources, feedback, browser text-to-speech, history, insights, memory & settings. Optional camera: facial expression is estimated in the browser with `@vladmandic/face-api` and only a label + confidence is sent. Communication is REST only; WebSocket streaming is not implemented.
 
 ### Backend API
 - **Technology**: Python + FastAPI
 - **Responsibility**: API gateway, request routing, session management, response orchestration
 - **Key Services**:
-  - Authentication & Authorization
+  - Authentication & Authorization (✅ implemented, Phase 2.4)
   - Session Manager
   - Conversation Manager
   - Memory Service (user-approved persistent context)
   - Response Orchestrator (coordinates ML, RAG, LLM, Safety)
-- **Status**: 🔮 Planned (Phase 2)
+- **Status**: ✅ Implemented. The Response Orchestrator is `backend/app/services/chat_service.py`; see [`docs/api/CONTRACTS.md`](../api/CONTRACTS.md).
+- **Response policy** (`backend/app/services/policy.py`): counseling stages *explore* (first two user turns: listen, reflect, one small question, no advice), *deepen* (patterns, gentle challenge of absolutes) and *support* (only when the user asks for help: one concrete idea; knowledge-base retrieval runs only here). Context passed to the LLM: this conversation, summaries of earlier sessions and saved memories (when memory is on), recent mood history (when emotion statistics are on) and per-signal mood labels. See [`docs/ml/COUNSELING-STYLE.md`](../ml/COUNSELING-STYLE.md).
 
 ### Database
 - **Technology**: PostgreSQL
 - **Responsibility**: Persistent storage for users, sessions, conversations, preferences
-- **Status**: 🔮 Planned (Phase 2)
+- **Status**: ✅ Implemented: `users` (+ privacy preferences), `conversations`, `messages`, `memories`, `feedback`, `analysis_results` via Alembic. Migrations are rendered offline in testing; not executed against live PostgreSQL in the automated suite.
 
 ### ML Pipeline
 - **Technology**: Python, scikit-learn, librosa, Transformers
 - **Sub-modules**:
   - **Audio**: Speech-to-text (Whisper), emotion detection, audio feature extraction
   - **NLP**: Sentiment analysis, intent classification, entity extraction
-  - **Fusion**: Multimodal signal combination
-- **Status**: 🔮 Planned (Phase 4)
+  - **Fusion**: Multimodal signal combination (voice, words, optional facial expression, previous turn)
+- **Status**: ✅ Implemented: preprocessing, features, RAVDESS-trained Random Forest (see [`docs/ml/VOICE-EMOTION-MODEL.md`](../ml/VOICE-EMOTION-MODEL.md)), faster-whisper STT, VADER + lexicon text emotion, weighted late fusion. Intent/entity extraction is not implemented.
 
 ### RAG System
 - **Technology**: Embeddings model + Vector database
@@ -91,16 +93,16 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
   - **Ingestion**: Document processing and chunking
   - **Embeddings**: Vector generation
   - **Retrieval**: Similarity search for relevant context
-- **Status**: 🔮 Planned (Phase 5)
+- **Status**: ✅ Implemented with TF-IDF over an original knowledge base (`rag/knowledge_base/`); no embeddings or vector database.
 
 ### Safety & Guardrails
 - **Responsibility**: Content filtering, harmful content detection, bias mitigation, output validation
-- **Status**: 🔮 Planned (Phase 7)
+- **Status**: ✅ Implemented: rule-based input classifier, output guardrail, crisis protocol that bypasses the LLM. Bias detection is not implemented.
 
 ### LLM Integration
-- **Technology**: API-based LLM (e.g., OpenAI, Anthropic)
+- **Technology**: API-based LLM: Groq (open models) or Anthropic (Claude)
 - **Responsibility**: Response generation grounded in conversation context, ML analysis, and RAG results
-- **Status**: 🔮 Planned (Phase 6)
+- **Status**: ✅ Implemented: Groq (`openai/gpt-oss-120b`, Groq SDK) or Claude (`claude-opus-5-5`, Anthropic SDK), selected by `LLM_PROVIDER`, with a labeled offline template fallback.
 
 ---
 
@@ -132,7 +134,10 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
 
 | Component | Status |
 |---|---|
-| Repository structure | ✅ Implemented |
-| Documentation foundation | ✅ Implemented |
-| Environment configuration | ✅ Implemented |
-| Everything else | 🔮 Planned |
+| Backend API, database, authentication | ✅ Implemented |
+| ML pipeline (audio, STT, text, fusion) | ✅ Implemented |
+| Conversation pipeline (context, memory, policy, LLM, RAG, safety) | ✅ Implemented |
+| Feedback, analytics, privacy settings | ✅ Implemented |
+| Frontend | ✅ Implemented |
+| Docker, Compose, CI | ⚠️ Written, not validated |
+| Streaming, multilingual, MLOps monitoring | ❌ Not implemented |

@@ -1,0 +1,10 @@
+# ML / RAG / safety packages (ml/, rag/, safety/)
+numpy>=2.0            # array math
+scipy>=1.13           # resampling, high-pass filter
+soundfile>=0.12       # WAV/FLAC decoding from memory (no ffmpeg)
+librosa>=0.10         # MFCC, chroma, spectral, ZCR, RMS features
+scikit-learn>=1.5     # SVM / Random Forest, metrics, TF-IDF retrieval
+joblib>=1.4           # model serialization
+matplotlib>=3.8       # confusion-matrix plot (training only)
+vaderSentiment>=3.3   # text sentiment
+faster-whisper>=1.0   # local speech-to-text

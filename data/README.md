@@ -44,3 +44,11 @@ data/
 ## Current Datasets
 
 None. Datasets will be added in Phase 4+ when ML pipeline development begins.
+
+## Datasets in use
+
+| Dataset | Location | Source | License | Samples |
+|---|---|---|---|---|
+| RAVDESS speech (`Audio_Speech_Actors_01-24.zip`), downloaded 2026-09-29 | `data/raw/ravdess/Actor_XX/*.wav` | https://zenodo.org/records/1188976 (Livingstone & Russo, 2018) | CC BY-NC-SA 4.0 (non-commercial) | 1,440 WAV clips, 24 actors, 8 emotions |
+
+No preprocessing is written back to disk; audio is preprocessed in memory during training.

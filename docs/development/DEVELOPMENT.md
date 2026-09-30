@@ -41,7 +41,8 @@ cd ECHO-AI
 # 2. Copy environment variables
 cp .env.example .env
 
-# 3. (When backend work begins) Create Python virtual environment
+# 3. Backend: create the virtual environment inside backend/ (see backend/README.md)
+cd backend
 python -m venv .venv
 
 # Activate — Windows PowerShell:
@@ -49,6 +50,10 @@ python -m venv .venv
 
 # Activate — Linux / macOS:
 source .venv/bin/activate
+
+pip install -r requirements.txt
+pytest            # run the backend test suite
+cd ..
 
 # 4. (When frontend work begins) Install Node dependencies
 cd frontend
@@ -66,7 +71,7 @@ cd ..
 |---|---|---|
 | `main` | Production-ready releases | Yes |
 | `develop` | Active development integration | Yes |
-| `feat/*` | Feature branches | No |
+| `feature/*` | Feature/phase branches (e.g. `feature/phase2-contracts`) | No |
 | `fix/*` | Bug fix branches | No |
 | `docs/*` | Documentation branches | No |
 | `chore/*` | Maintenance branches | No |
@@ -77,14 +82,14 @@ cd ..
 # Always branch from develop
 git checkout develop
 git pull origin develop
-git checkout -b feat/my-feature
+git checkout -b feature/my-feature
 
 # Work on your feature...
 git add .
 git commit -m "feat: add my feature"
 
-# Push and create PR
-git push -u origin feat/my-feature
+# Push and open a PR into develop (merged only after human review)
+git push -u origin feature/my-feature
 ```
 
 ### Commit Conventions

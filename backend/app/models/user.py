@@ -10,7 +10,7 @@ Authentication, password hashing, and tokens are deferred to Phase 2.4+.
 
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Integer, String, UniqueConstraint, false, true
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -53,6 +53,16 @@ class User(Base):
         String(255),
         nullable=False,
     )
+    # Privacy / personalization preferences
+    memory_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=true()
+    )
+    save_emotion_stats: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
+    response_style: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="balanced", server_default="balanced"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -68,6 +78,11 @@ class User(Base):
     # Relationships
     conversations: Mapped[list["Conversation"]] = relationship(
         "Conversation",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    memories: Mapped[list["Memory"]] = relationship(
+        "Memory",
         back_populates="user",
         cascade="all, delete-orphan",
     )
