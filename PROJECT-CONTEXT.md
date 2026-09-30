@@ -19,32 +19,48 @@ ECHO-AI is a **multimodal conversational AI system** designed to:
 - Apply **safety controls and guardrails** to all outputs
 - Provide **analytics** on conversation quality, user satisfaction, and system performance
 
+Emotion and sentiment outputs are model predictions, never clinical or
+psychological diagnoses.
+
 ---
 
 ## Current Status
 
-### Phase 1 — Development Environment & Repository Foundation ✅ (In Progress)
+Phases 1 and 2.1-2.4 are merged. Phase 2.5 (API contracts) has a PR open
+against `develop`. The rest of the product was implemented under the
+completion plan in [`docs/phases/README.md`](docs/phases/README.md) on
+`feature/echo-ai-completion`, after the project owner delegated technical
+decisions to the coding agent (2026-09-29).
 
-Phase 1 establishes:
+### Implemented (covered by automated tests unless noted)
 
-- Git repository and branching strategy
-- Project directory structure
-- Environment variable strategy
-- Documentation foundation
-- Agent instructions
-- Development workflow documentation
-- Validation tooling
+- **Backend** (`backend/`): FastAPI, settings, logging, error handling, health checks, CORS.
+- **Database**: SQLAlchemy 2.x, PostgreSQL via Alembic (SQLite for local development). Models: User (+ privacy preferences), Conversation, Message, Memory, Feedback, AnalysisResult.
+- **Authentication**: register, login, JWT (HS256), bcrypt; per-user ownership enforced on every resource.
+- **Audio ML** (`ml/audio`, `ml/training`, `ml/inference`): preprocessing, 100-dim features, RAVDESS training with SVM vs Random Forest, inference. Speaker-independent test accuracy 0.458 / macro-F1 0.453 (8 classes): [`docs/ml/VOICE-EMOTION-MODEL.md`](docs/ml/VOICE-EMOTION-MODEL.md).
+- **Speech-to-text**: faster-whisper `base`, local CPU. Verified manually with real speech; not in automated tests (model download).
+- **Text analysis** (`ml/nlp`): VADER sentiment + keyword emotion lexicon (heuristic, uncalibrated).
+- **Fusion** (`ml/models`): weighted late fusion of voice, text, optional facial expression and previous-turn context.
+- **Camera expression (opt-in)**: facial expression estimated in the browser with `@vladmandic/face-api` (MIT); only a label and confidence are sent, never video. Not covered by automated tests with a real camera.
+- **Counseling-style responses**: prompt built around reflective listening, one exploratory question, past-session and mood-history context, tailored evidence-based techniques; no diagnosis or medication advice; referrals only for hopelessness/worthlessness language or on request.
+- **Conversation pipeline**: context window, user-approved memory, response policy, LLM (Groq or Claude behind `LLMService`; labeled offline fallback), RAG with cited sources, input/output safety, crisis protocol.
+- **RAG** (`rag/`): original knowledge base, Markdown chunking, TF-IDF retrieval.
+- **Safety** (`safety/`): rule-based input classifier (normal/distress/high-risk), output guardrail.
+- **Feedback, analytics, privacy settings**: emotion statistics are opt-in; raw audio is never stored.
+- **Frontend** (`frontend/`): React + Vite + TypeScript + Tailwind; text and voice chat, emotion display, sources, feedback, browser TTS, history, insights, memory & settings.
+- **Infrastructure**: Dockerfiles, docker-compose, GitHub Actions CI, **written but not validated**.
 
-### What Is NOT Implemented
+Not exercised by the automated suite: live LLM provider calls (Groq/Claude; tested with fake clients), live
+PostgreSQL migrations (rendered offline only), Whisper transcription.
 
-- No backend API
-- No frontend application
-- No database schema
-- No ML models or pipelines
-- No RAG system
-- No LLM integration
-- No authentication
-- No deployment infrastructure
+### Not Implemented
+
+- Real-time streaming / WebSockets
+- Multilingual support
+- Grounding / hallucination verification beyond showing sources
+- Learned fusion; transformer-based text emotion
+- Drift monitoring, experiment tracking, A/B testing
+- Production deployment
 
 ---
 
@@ -52,21 +68,21 @@ Phase 1 establishes:
 
 | Module | Directory | Description |
 |---|---|---|
-| **Frontend** | `frontend/` | React + Vite web application for the chat interface |
-| **Backend** | `backend/` | FastAPI REST/WebSocket API server |
-| **Database** | `database/` | PostgreSQL schemas, migrations, seed data |
-| **Audio ML** | `ml/audio/` | Speech emotion recognition, audio feature extraction |
-| **NLP** | `ml/nlp/` | Text analysis, sentiment, intent classification |
-| **Speech-to-Text** | `ml/audio/` | Whisper-based transcription |
-| **Multimodal Fusion** | `ml/models/` | Combining audio + text signals |
-| **Memory** | `backend/` | Conversation context & user-approved memory |
-| **RAG** | `rag/` | Document ingestion, embeddings, vector retrieval |
-| **LLM** | `backend/` | LLM API integration for response generation |
-| **Safety** | `safety/` | Content filtering, guardrails, bias detection |
-| **Analytics** | `backend/` | Usage metrics, conversation quality tracking |
-| **Testing** | `tests/` | Unit, integration, and end-to-end tests |
-| **Infrastructure** | `infrastructure/` | Docker, CI/CD, monitoring, deployment |
-| **MLOps** | `infrastructure/` | Model versioning, experiment tracking, monitoring |
+| **Frontend** | `frontend/` | React + Vite web application (implemented) |
+| **Backend** | `backend/` | FastAPI REST API and conversation pipeline (implemented) |
+| **Database** | `backend/alembic/` | PostgreSQL schema managed with Alembic migrations (implemented) |
+| **Audio ML** | `ml/audio/`, `ml/training/`, `ml/inference/` | Preprocessing, features, voice emotion model (implemented) |
+| **NLP** | `ml/nlp/` | Text sentiment and emotion (implemented, heuristic) |
+| **Speech-to-Text** | `ml/audio/` | faster-whisper transcription (implemented) |
+| **Multimodal Fusion** | `ml/models/` | Weighted late fusion (implemented) |
+| **Memory** | `backend/` | Context window & user-approved memory (implemented) |
+| **RAG** | `rag/` | Knowledge base, chunking, TF-IDF retrieval (implemented) |
+| **LLM** | `backend/app/services/llm.py` | Groq or Claude behind `LLMService` (implemented) |
+| **Safety** | `safety/` | Input/output guardrails, crisis protocol (implemented) |
+| **Analytics** | `backend/` | Emotion distribution, feedback, per-request timings (implemented) |
+| **Testing** | `backend/tests/`, `tests/`, `frontend/src/*.test.ts` | Unit, integration and pipeline tests (implemented) |
+| **Infrastructure** | `infrastructure/`, `docker-compose.yml`, `.github/` | Docker, Compose, CI (not validated) |
+| **MLOps** | `ml/training/`, `ml/evaluation/` | Versioned artifact, metrics.json, latency benchmark (tracking/monitoring not implemented) |
 
 ---
 
@@ -111,7 +127,12 @@ Phase 1 establishes:
          └────────────┘
 ```
 
-### Data Flow
+All components in this diagram are implemented (RAG uses TF-IDF rather than
+a vector database). The backend talks to the ML, RAG, safety and LLM
+components only through the service interfaces in
+`backend/app/services/interfaces.py`.
+
+### Data Flow (target)
 
 1. **User** sends text/voice input via the **Frontend**
 2. **Backend** receives the request, routes to processing pipelines
@@ -125,15 +146,5 @@ Phase 1 establishes:
 
 ## Currently Out of Scope
 
-The following are explicitly **not** part of Phase 1 and must not be implemented until their respective phases:
-
-- Actual AI/ML model training or inference
-- LLM API calls
-- Database schema creation
-- Frontend application code
-- Authentication system
-- Docker containerization
-- CI/CD pipeline execution
-- Production deployment
-- Real-time audio processing
-- Vector database setup
+See "Not Implemented" above. Any of these needs an explicit decision before
+work starts.

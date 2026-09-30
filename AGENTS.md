@@ -10,9 +10,22 @@
 
 ## Current Phase
 
-**Phase 1** — Development Environment & Repository Foundation
+**Phase 3: completion plan**: implemented on `feature/echo-ai-completion` and merged into `develop` and `main` on 2026-09-30 at the project owner's request (without PR review).
 
-Phase 1 establishes the engineering foundation only. No AI/ML functionality, no application logic, no deployment infrastructure has been implemented yet.
+| Phase | Status |
+|---|---|
+| 1: Repository foundation | ✅ Merged |
+| 2.1-2.4: Backend, database, domain models, authentication | ✅ Merged |
+| 2.5: API contracts & service interfaces | ✅ Merged |
+| 3.1-3.8: Audio preprocessing, features, voice emotion model, STT, text emotion, fusion, conversation pipeline (memory, LLM, RAG, safety), feedback/analytics, frontend | ✅ Implemented and tested |
+| 3.8b: Landing page, dark theme (original design) | ✅ Implemented, exercised in a browser |
+| 3.8c: Groq LLM provider, counseling-style replies (stages, past sessions, mood history), opt-in in-browser camera expression | ✅ Implemented and tested |
+| 3.9: Docker, Compose, CI | ⚠️ Written, not validated |
+
+On 2026-09-29 the project owner delegated technical decisions to the coding
+agent and asked for the project to be completed. The plan and its decisions
+are recorded in [`docs/phases/README.md`](docs/phases/README.md). The rules
+below still apply to all further work.
 
 ---
 
@@ -24,7 +37,7 @@ Phase 1 establishes the engineering foundation only. No AI/ML functionality, no 
 4. **ML isolated from application logic** — ML components expose prediction interfaces consumed by the backend; they never import backend modules directly.
 5. **Configuration through environment variables** — All secrets, connection strings, and tunable parameters come from `.env` (never committed). See `.env.example` for the template.
 6. **No secrets in source code** — API keys, passwords, tokens, and certificates must never appear in committed files.
-7. **Testable components** — Every module should be independently testable. Tests live under `tests/` mirroring the source structure.
+7. **Testable components** — Every module should be independently testable. Tests live under `tests/` mirroring the source structure (existing backend tests live in `backend/tests/`).
 8. **Documentation alongside implementation** — When you build a feature, update the relevant docs in `docs/`.
 
 ---
@@ -53,7 +66,9 @@ Phase 1 establishes the engineering foundation only. No AI/ML functionality, no 
 
 1. **Phase 1 Foundation** — Phase 1 begins by establishing the `develop` integration branch.
 2. **Branch Roles** — `main` remains the stable branch, while `develop` is the integration branch for ongoing feature development.
-3. Use **feature branches** created from `develop`.
+3. Use **feature branches** created from `develop`, named `feature/<phase-or-feature>` (e.g. `feature/phase2-contracts`).
+   Open the PR into `develop`. Agents open PRs but **do not merge** them; merging follows human review.
+   (PRs #1–#4 for Phases 2.1–2.4 were merged into `main` and then merged back into `develop`.)
 4. **Do not force push** to `main` or `develop`.
 5. **Do not reset** shared branches.
 6. Keep commits **focused** — one logical change per commit.
@@ -70,8 +85,8 @@ Phase 1 establishes the engineering foundation only. No AI/ML functionality, no 
 
 ```
 ECHO-AI/
-├── frontend/           # React + Vite frontend (Phase 3+)
-├── backend/            # Python FastAPI backend (Phase 2+)
+├── frontend/           # React + Vite + TypeScript + Tailwind frontend
+├── backend/            # FastAPI backend + conversation pipeline (tests in backend/tests/)
 ├── ml/                 # Machine learning pipelines
 │   ├── audio/          # Audio/speech processing
 │   ├── nlp/            # NLP models and processing
@@ -108,4 +123,9 @@ ECHO-AI/
 | `.env.example` | Environment variable template |
 | `.gitignore` | Git ignore rules |
 | `docs/` | All project documentation |
+| `docs/phases/README.md` | Implementation phase status and workflow |
+| `docs/api/CONTRACTS.md` | Versioned API & service contracts |
+| `docs/ml/VOICE-EMOTION-MODEL.md` | Voice emotion model card with measured metrics |
+| `docs/ml/COUNSELING-STYLE.md` | Reply style principles, stages and research sources |
+| `backend/README.md` | Backend setup, endpoints and tests |
 | `scripts/check_environment.ps1` | Development environment validation |

@@ -1,0 +1,53 @@
+# Local full stack: PostgreSQL + backend + frontend.
+#   cp .env.docker.example .env   # then set real values
+#   docker compose up --build
+# Frontend: http://localhost:5173   API: http://localhost:8000/docs
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: echo_ai
+      POSTGRES_USER: echo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U echo -d echo_ai"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/backend.Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://echo:${POSTGRES_PASSWORD}@db:5432/echo_ai
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      DEBUG: "false"
+      ENVIRONMENT: docker
+      CORS_ORIGINS: http://localhost:5173
+    volumes:
+      - ./models:/app/models:ro
+      - whisper-cache:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/frontend.Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  whisper-cache:
