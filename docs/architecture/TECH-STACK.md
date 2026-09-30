@@ -10,14 +10,14 @@
 
 | Technology | Purpose | Version (Target) |
 |---|---|---|
-| React | UI framework | 18+ |
-| Vite | Build tool & dev server | 5+ |
-| Tailwind CSS | Utility-first CSS | 3+ |
-| TypeScript | Type-safe JavaScript | 5+ |
-| Vitest or Jest | Unit testing | Latest |
-| React Testing Library | Component testing | Latest |
+| React | UI framework | 19 (in use) |
+| Vite | Build tool & dev server | 8 (in use) |
+| Tailwind CSS | Utility-first CSS | 4 (in use) |
+| TypeScript | Type-safe JavaScript | 5 (in use) |
+| Vitest | Unit testing | 5 (in use) |
+| @vladmandic/face-api | In-browser facial-expression estimation (opt-in camera), MIT | 1.7 (in use, lazy-loaded) |
 
-**Rationale**: Vite provides fast HMR and build performance. React is the team's primary competency. Tailwind enables rapid, consistent styling. TypeScript catches errors at compile time.
+**Rationale**: Vite provides fast HMR and build performance. React is the team's primary competency. Tailwind enables rapid, consistent styling. TypeScript catches errors at compile time. face-api runs entirely in the browser, so camera video never leaves the device.
 
 ---
 
@@ -130,7 +130,7 @@
 > FastAPI, Uvicorn, pydantic-settings, SQLAlchemy, psycopg, Alembic, PyJWT, bcrypt,
 > email-validator, pytest, httpx, groq, anthropic, NumPy, SciPy, soundfile, librosa,
 > scikit-learn, joblib, matplotlib, vaderSentiment, faster-whisper; React 19,
-> Vite 8, TypeScript 5, Tailwind CSS 4, Vitest.
+> Vite 8, TypeScript 5, Tailwind CSS 4, Vitest, @vladmandic/face-api.
 >
 > **Planned choices that were not used**: pandas, Hugging Face Transformers,
 > PyTorch/TensorFlow, Sentence Transformers, a vector database, LangChain/LlamaIndex,

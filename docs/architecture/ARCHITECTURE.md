@@ -60,7 +60,7 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
 - **Technology**: React + Vite + Tailwind CSS
 - **Responsibility**: User interface for text/voice chat, settings, analytics
 - **Communication**: REST and WebSocket connections to Backend API
-- **Status**: ✅ Implemented (React + Vite + TypeScript + Tailwind). Communication is REST only; WebSocket streaming is not implemented.
+- **Status**: ✅ Implemented (React + Vite + TypeScript + Tailwind): landing page, sign-in/up, text and voice chat, emotion badges, cited sources, feedback, browser text-to-speech, history, insights, memory & settings. Optional camera: facial expression is estimated in the browser with `@vladmandic/face-api` and only a label + confidence is sent. Communication is REST only; WebSocket streaming is not implemented.
 
 ### Backend API
 - **Technology**: Python + FastAPI
@@ -72,6 +72,7 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
   - Memory Service (user-approved persistent context)
   - Response Orchestrator (coordinates ML, RAG, LLM, Safety)
 - **Status**: ✅ Implemented. The Response Orchestrator is `backend/app/services/chat_service.py`; see [`docs/api/CONTRACTS.md`](../api/CONTRACTS.md).
+- **Response policy** (`backend/app/services/policy.py`): counseling stages *explore* (first two user turns: listen, reflect, one small question, no advice), *deepen* (patterns, gentle challenge of absolutes) and *support* (only when the user asks for help: one concrete idea; knowledge-base retrieval runs only here). Context passed to the LLM: this conversation, summaries of earlier sessions and saved memories (when memory is on), recent mood history (when emotion statistics are on) and per-signal mood labels. See [`docs/ml/COUNSELING-STYLE.md`](../ml/COUNSELING-STYLE.md).
 
 ### Database
 - **Technology**: PostgreSQL
@@ -83,7 +84,7 @@ ECHO-AI is a multimodal conversational AI system composed of the following major
 - **Sub-modules**:
   - **Audio**: Speech-to-text (Whisper), emotion detection, audio feature extraction
   - **NLP**: Sentiment analysis, intent classification, entity extraction
-  - **Fusion**: Multimodal signal combination
+  - **Fusion**: Multimodal signal combination (voice, words, optional facial expression, previous turn)
 - **Status**: ✅ Implemented: preprocessing, features, RAVDESS-trained Random Forest (see [`docs/ml/VOICE-EMOTION-MODEL.md`](../ml/VOICE-EMOTION-MODEL.md)), faster-whisper STT, VADER + lexicon text emotion, weighted late fusion. Intent/entity extraction is not implemented.
 
 ### RAG System

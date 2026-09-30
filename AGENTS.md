@@ -10,14 +10,16 @@
 
 ## Current Phase
 
-**Phase 3: completion plan** (implemented on `feature/echo-ai-completion`, not yet merged).
+**Phase 3: completion plan**: implemented on `feature/echo-ai-completion` and merged into `develop` and `main` on 2026-09-30 at the project owner's request (without PR review).
 
 | Phase | Status |
 |---|---|
 | 1: Repository foundation | ✅ Merged |
 | 2.1-2.4: Backend, database, domain models, authentication | ✅ Merged |
-| 2.5: API contracts & service interfaces | ✅ Implemented, PR open against `develop` |
+| 2.5: API contracts & service interfaces | ✅ Merged |
 | 3.1-3.8: Audio preprocessing, features, voice emotion model, STT, text emotion, fusion, conversation pipeline (memory, LLM, RAG, safety), feedback/analytics, frontend | ✅ Implemented and tested |
+| 3.8b: Landing page, dark theme (original design) | ✅ Implemented, exercised in a browser |
+| 3.8c: Groq LLM provider, counseling-style replies (stages, past sessions, mood history), opt-in in-browser camera expression | ✅ Implemented and tested |
 | 3.9: Docker, Compose, CI | ⚠️ Written, not validated |
 
 On 2026-09-29 the project owner delegated technical decisions to the coding
@@ -124,5 +126,6 @@ ECHO-AI/
 | `docs/phases/README.md` | Implementation phase status and workflow |
 | `docs/api/CONTRACTS.md` | Versioned API & service contracts |
 | `docs/ml/VOICE-EMOTION-MODEL.md` | Voice emotion model card with measured metrics |
+| `docs/ml/COUNSELING-STYLE.md` | Reply style principles, stages and research sources |
 | `backend/README.md` | Backend setup, endpoints and tests |
 | `scripts/check_environment.ps1` | Development environment validation |

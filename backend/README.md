@@ -139,6 +139,8 @@ All implemented; full contract in [`docs/api/CONTRACTS.md`](../docs/api/CONTRACT
 The backend imports the root-level `ml/`, `rag/` and `safety/` packages
 (`app/__init__.py` adds the repository root to `sys.path`).
 
+**Reply style:** counseling stages and prompt are described in [`docs/ml/COUNSELING-STYLE.md`](../docs/ml/COUNSELING-STYLE.md) (`app/services/policy.py`, `app/services/llm.py`). Set `GROQ_REASONING_EFFORT=medium` for more reflective replies at some latency cost.
+
 **LLM:** set `GROQ_API_KEY` (default model `openai/gpt-oss-120b`) or `ANTHROPIC_API_KEY` in `backend/.env`. `LLM_PROVIDER=auto` prefers Groq. Without a key
 the backend uses a clearly labeled offline template responder (`offline-template-v1`).
 

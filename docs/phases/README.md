@@ -13,7 +13,7 @@ named branch but it has not been merged yet.
 | 2.2 | Database foundation | ✅ Merged | PR #2 |
 | 2.3 | Domain models | ✅ Merged | PR #3 |
 | 2.4 | Authentication | ✅ Merged | PR #4 |
-| 2.5 | API contracts, service interfaces, 25 MB upload limit | ✅ Implemented, PR open against `develop` | `feature/phase2-contracts` |
+| 2.5 | API contracts, service interfaces, 25 MB upload limit | ✅ Merged | `feature/phase2-contracts` |
 
 PRs #1–#4 were merged into `main` and then merged back into `develop`.
 
@@ -36,7 +36,10 @@ plan (one approved phase at a time) was replaced by this plan, implemented on
 | 3.8 | Frontend (React + Vite + TypeScript + Tailwind): auth, text/voice chat, emotion, sources, feedback, TTS, history, insights, memory & settings | ✅ Implemented, built, exercised in a browser |
 | 3.8b | Landing page and dark theme (design inspired by Cruip's Open PRO template, recreated with original code and assets; no template files included because the template is GPL-3.0 with a no-redistribution request and this repo is public MIT) | ✅ Implemented, built, exercised in a browser |
 | 3.8c | Counseling-style responses (past sessions, mood history, per-signal labels, no reflexive referrals) and opt-in in-browser camera facial expression as a fusion signal | ✅ Implemented, tested (camera verified up to model loading; not tested with a live face) |
+| 3.8d | Human counseling style v2: brief OARS-style replies, explore → deepen → support stages, retrieval only on request, loneliness/exclusion vocabulary in text emotion ([`COUNSELING-STYLE.md`](../ml/COUNSELING-STYLE.md)) | ✅ Implemented, tested, checked live with Groq |
 | 3.9 | Docker, Docker Compose, GitHub Actions CI | ⚠️ Written, **not validated** (Docker is not installed on the development machine; CI has not run yet) |
+
+On 2026-09-30 `feature/echo-ai-completion` (which includes Phase 2.5) was merged into `develop` and `main` at the project owner's request, without a PR review.
 
 ### Key decisions
 
